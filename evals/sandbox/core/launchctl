@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Fake launchctl — records the call, loads nothing into the real launchd.
+echo "launchctl $*" >> "${SB_LOG:-/dev/null}"; exit 0

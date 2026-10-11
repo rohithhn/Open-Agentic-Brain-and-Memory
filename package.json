@@ -1,0 +1,25 @@
+{
+  "name": "agentic-brain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agentic Brain \u2014 one encrypted memory for Claude Code, Claude Desktop, Cursor, Codex and Gemini/Antigravity, synced to your own private GitHub.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "brain": "bin/brain.mjs"
+  },
+  "scripts": {
+    "serve": "node ui/server.mjs",
+    "sync": "node bin/brain.mjs sync",
+    "restore": "node bin/brain.mjs restore",
+    "status": "node bin/brain.mjs status",
+    "test": "node scripts/run-tests.mjs",
+    "test:sandbox": "node scripts/run-tests.mjs --sandbox"
+  },
+  "optionalDependencies": {
+    "@huggingface/transformers": "^4.3.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

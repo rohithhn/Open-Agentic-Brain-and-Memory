@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Simulated Homebrew: "installs" real binaries into this fake Mac's bin dir only.
+: "${SB_BIN:?}"; echo "brew $*" >> "${SB_LOG:-/dev/null}"
+verb="$1"; f="$2"
+# `brew --prefix git` → where this Mac's (simulated) Homebrew git lives
+if [ "$verb" = --prefix ]; then [ -e "$HOME/.foreign-git" ] && echo "$HOME/brewgit" || echo "$HOME/nobrewgit"; exit 0; fi
+[ "$verb" = link ] && f="$3"
+[ -n "$f" ] || exit 0
+# Like Homebrew 7: ask before installing unless HOMEBREW_NO_ASK is set.
+if [ "${HOMEBREW_NO_ASK:-}" != 1 ]; then
+  printf "Do you want to proceed with the %s? [y/n] " "$verb"
+  read -r ans || { echo "brew $verb $f: ASKED AND GOT NO ANSWER" >> "${SB_LOG:-/dev/null}"; exit 1; }
+  [ "$ans" = y ] || exit 1
+fi
+link() { ln -sf "$1" "$SB_BIN/$2"; }
+case "$f" in
+  node)    rm -f "$SB_BIN/node"; link "$SB_NODE" node ;;
+  age)     link "$SB_AGE" age; link "$SB_AGEK" age-keygen ;;
+  gh)      cp "$SB_SHIMS/gh" "$SB_BIN/gh" ;;
+  git-lfs) printf '#!/bin/sh\nexit 0\n' > "$SB_BIN/git-lfs"; chmod +x "$SB_BIN/git-lfs" ;;
+  git)     if [ "$verb" = link ]; then rm -f "$SB_BIN/git"      # relink: Homebrew's git wins again
+           elif [ -e "$HOME/.foreign-git" ]; then :           # reinstall can't fix a foreign link
+           else rm -f "$SB_BIN/git"; fi ;;                    # drop the broken git; the good one takes over
+  *)       exit 1 ;;
+esac

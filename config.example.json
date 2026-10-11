@@ -1,0 +1,31 @@
+{
+  "repo": {
+    "name": "claude-brain",
+    "owner": "YOUR_GITHUB_USERNAME",
+    "private": true,
+    "remote": ""
+  },
+  "ui": {
+    "port": 37800,
+    "host": "127.0.0.1"
+  },
+  "encryption": {
+    "enabled": true,
+    "tool": "age"
+  },
+  "sync": {
+    "skills": true,
+    "agents": true,
+    "settings": true,
+    "memory": true,
+    "folderContext": true,
+    "additiveSkills": true
+  },
+  "sources": {
+    "claudeMemDir": "~/.claude-mem",
+    "sharedDir": "~/.claude-shared",
+    "claudeDir": "~/.claude"
+  },
+  "keychainService": "claude-brain",
+  "unlinkedTools": []
+}

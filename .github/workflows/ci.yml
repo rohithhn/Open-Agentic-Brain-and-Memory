@@ -1,0 +1,125 @@
+name: CI
+
+# Runs the engine's own test suites and its pre-commit identifier/secret guard
+# on every push and pull request. Zero dependencies to install — the whole
+# engine is dependency-free node:sqlite/node:crypto/node:fs code, so there is
+# no `npm install` step. No secrets are used anywhere in this workflow.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test suites (209 assertions)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: node --version (expect >= 22, node:sqlite requires it)
+        run: node --version
+
+      - name: bridge-test
+        run: node evals/bridge-test.mjs
+
+      - name: doctor-test
+        run: node evals/doctor-test.mjs
+
+      - name: engine-mirror-test
+        run: node evals/engine-mirror-test.mjs
+
+      - name: ingest-gemini-test
+        run: node evals/ingest-gemini-test.mjs
+
+      - name: wire-targets-test
+        run: node evals/wire-targets-test.mjs
+
+      - name: wire-test
+        run: node evals/wire-test.mjs
+
+      # The scrubber is the most security-critical component here — it decides
+      # what counts as a secret. Its suite reports PASS/FAIL rather than a count,
+      # which is why it sits outside the 209 total, but it must still gate merges.
+      - name: scrub-test (secret detector corpus)
+        run: node evals/scrub-test.mjs
+
+  acceptance:
+    name: Auto-wiring acceptance harness (29 checks)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: auto-wiring-acceptance.sh
+        run: bash docs/specs/auto-wiring-acceptance.sh
+
+  guard:
+    name: Identifier / secret guard (same patterns as pre-commit)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan tracked files against .githooks/pre-commit's DENY patterns
+        run: |
+          set -euo pipefail
+
+          # Pull the patterns out of the hook itself so this job can never drift
+          # from what a local commit would have blocked. If the hook's variable
+          # names or format change, this extraction is designed to fail loudly
+          # (empty pattern) rather than silently stop checking anything.
+          HOOK=.githooks/pre-commit
+          DENY=$(sed -n "s/^DENY='\(.*\)'$/\1/p" "$HOOK")
+          DENY_PATHS=$(sed -n "s/^DENY_PATHS='\(.*\)'$/\1/p" "$HOOK")
+
+          if [ -z "$DENY" ] || [ -z "$DENY_PATHS" ]; then
+            echo "🚫 Could not extract DENY/DENY_PATHS from $HOOK — guard cannot run blind." >&2
+            echo "   Check that $HOOK still defines both as single-quoted DENY=/DENY_PATHS= lines." >&2
+            exit 1
+          fi
+
+          echo "Loaded DENY_PATHS: $DENY_PATHS"
+          echo "Loaded DENY pattern (identifiers/secrets — not echoed to avoid noise)"
+
+          fail=0
+          files=$(git ls-files)
+
+          for f in $files; do
+            if echo "$f" | grep -qE "$DENY_PATHS"; then
+              echo "🚫 BLOCKED: denied path is tracked: $f" >&2
+              fail=1
+              continue
+            fi
+            case "$f" in
+              *.age|*.db|*.db-wal|*.db-shm|*.identity)
+                echo "🚫 BLOCKED: denied artifact is tracked: $f" >&2
+                fail=1
+                continue
+                ;;
+            esac
+            # Skip binaries the same way the hook does: grep -I already ignores
+            # binary content, so no separate binary check is needed here.
+            if grep -nEI "$DENY" "$f" >/dev/null 2>&1; then
+              echo "--- $f ---" >&2
+              grep -nEI "$DENY" "$f" >&2 || true
+              echo "🚫 BLOCKED: personal/secret pattern in $f" >&2
+              fail=1
+            fi
+          done
+
+          if [ "$fail" -ne 0 ]; then
+            echo "" >&2
+            echo "One or more files match the same deny patterns the local pre-commit hook enforces." >&2
+            echo "Fix or remove the matched content before merging." >&2
+            exit 1
+          fi
+
+          echo "✅ guard: no denied paths, artifacts, or identifier/secret patterns found in tracked files"

@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# agentic-brain guard. Install: git config core.hooksPath .githooks
+# Blocks personal identifiers, secrets, and private-only paths from ever entering
+# this repo's history — which is what makes "flip to public" safe with no rewrite.
+set -uo pipefail
+fail() { echo "🚫 BLOCKED: $1" >&2; exit 1; }
+
+# Deny literals are written with their first character bracketed, e.g. x[y]z. The
+# regex still matches the full word, but the pattern TEXT never contains the word,
+# so this file does not trip its own guard and can be committed. Do not "helpfully"
+# spell the words out in a comment — that reintroduces the self-match. There is
+# deliberately no skip-list for this file: an exemption would be a hole.
+DENY='/Users/[a-z0-9._-]+/(Documents|Library|\.local|\.cursor|mcp)|AGE-[S]ECRET-KEY-1[0-9A-Z]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|sk-[a]nt-[A-Za-z0-9_-]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+# Personal identifiers (names, usernames, machine and private project names) are NOT
+# listed here: this file is public, so listing them would publish them. The maintainer
+# keeps them in an untracked local file, one regex alternative per line (# comments ok):
+#   $(git rev-parse --git-common-dir)/info/agentic-brain-deny
+# When it exists it is appended to DENY, so the same check also covers those terms.
+LOCAL_DENY_FILE="$(git rev-parse --git-common-dir 2>/dev/null)/info/agentic-brain-deny"
+if [ -f "$LOCAL_DENY_FILE" ]; then
+  extra=$(grep -vE '^[[:space:]]*(#|$)' "$LOCAL_DENY_FILE" | paste -sd'|' -)
+  [ -n "$extra" ] && DENY="$DENY|$extra"
+fi
+# ALLOW: the ONLY exemption — exact, reviewed strings that legitimately carry an
+# identifier (the copyright holder line, the public install address). They are
+# deleted from the text before DENY runs; the same identifier anywhere else is
+# still blocked. Bracketed like DENY so this file does not trip itself.
+ALLOW='Copyright 2026 r[o]hithhn \(https://github\.com/r[o]hithhn\)|github\.com/r[o]hithhn/Ultra-Agentic-Memory-Brain-Public|r[o]hithhn/Ultra-Agentic-Memory-Brain-Public'
+DENY_PATHS='^(memory/|wiki/|learnings/|context/|launch/|settings/|\.brain-tmp/|config\.json$|MANIFEST\.json$|AGENTS\.md$|plan\.md$|LAUNCH_PLAN\.md$)'
+
+files=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$files" ] && exit 0
+
+for f in $files; do
+  echo "$f" | grep -qE "$DENY_PATHS" && fail "denied path: $f"
+  case "$f" in *.age|*.db|*.db-wal|*.db-shm|*.identity) fail "denied artifact: $f";; esac
+  # binaries: skip content scan, but cap size (no stray blobs)
+  if git diff --cached --numstat -- "$f" | grep -q '^-'; then
+    sz=$(git cat-file -s "$(git rev-parse ":$f")")
+    [ "$sz" -gt 1048576 ] && fail "binary >1MB: $f"
+    continue
+  fi
+  if git show ":$f" | sed -E "s#$ALLOW##g" | grep -nEI "$DENY" >/dev/null; then
+    echo "--- $f ---" >&2; git show ":$f" | sed -E "s#$ALLOW##g" | grep -nEI "$DENY" >&2
+    fail "personal/secret pattern in $f"
+  fi
+done
+exit 0

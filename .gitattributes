@@ -1,0 +1,5 @@
+# The encrypted memory blob moved off git entirely — it's uploaded as a GitHub
+# Release asset (brain-latest) instead of being tracked/LFS'd here.
+
+# When encryption is disabled, the raw DB (if committed) also goes to LFS.
+*.db filter=lfs diff=lfs merge=lfs -text

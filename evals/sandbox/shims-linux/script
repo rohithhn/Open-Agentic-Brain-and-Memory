@@ -1,0 +1,8 @@
+#!/bin/sh
+# BSD-form `script -q /dev/null cmd args…` (macOS) on top of util-linux script(1), which
+# wants `script -qec 'cmd args…' /dev/null`. Lets the harness use one invocation on both.
+[ "${1:-}" = -q ] && [ "${2:-}" = /dev/null ] || { echo "script shim: expected 'script -q /dev/null cmd…'" >&2; exit 2; }
+shift 2
+cmd=""
+for a in "$@"; do cmd="$cmd '$(printf %s "$a" | sed "s/'/'\\\\''/g")'"; done
+exec /usr/bin/script -qec "$cmd" /dev/null

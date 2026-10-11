@@ -1,0 +1,710 @@
+{
+  "generated_at": "2026-10-02T08:56:26.885Z",
+  "quick": false,
+  "sizes": [
+    1000,
+    10000,
+    50000,
+    100000
+  ],
+  "seed": 20260101,
+  "machine": {
+    "os": "darwin 25.6.0",
+    "arch": "arm64",
+    "cpu": "Apple M5",
+    "cores": 10,
+    "ram_gb": 16,
+    "node": "v26.10.0"
+  },
+  "method": {
+    "queries": 200,
+    "percentile": "nearest-rank over warm runs, in-process, wall-clock (performance.now)",
+    "vectors": "int8 unit vectors, dim 384; random (Box-Muller) for latency; 40 queries get planted cosine 0.42-0.82 neighbours so the semantic/fusion path is exercised",
+    "sandbox": "every store and child HOME is a mkdtemp dir, removed at the end",
+    "caveat_cold": "cold = first query in a fresh process; OS page cache is warm (file was just written), so true cold-disk numbers can be higher"
+  },
+  "scale": [
+    {
+      "size": 1000,
+      "store": {
+        "size": 1000,
+        "db_bytes_text_fts": 1929216,
+        "db_bytes_with_vectors": 2387968,
+        "db_mb_text_fts": 1.84,
+        "db_mb_with_vectors": 2.28,
+        "bytes_per_obs_text_fts": 1929,
+        "bytes_per_obs_with_vectors": 2388,
+        "avg_text_chars_per_obs": 690,
+        "ingest": {
+          "rows": 1000,
+          "insert_ms": 48.5,
+          "obs_per_s": 20619,
+          "synth_gen_ms": 5.58,
+          "note": "batched 1000-row transactions, product schema incl. FTS5 triggers"
+        },
+        "vectors": {
+          "rows": 1000,
+          "insert_ms": 7.9,
+          "vec_per_s": 126529,
+          "planted_neighbour_rows": 184,
+          "note": null
+        }
+      },
+      "bm25": {
+        "mode": "bm25",
+        "size": 1000,
+        "import_ms": 7.43,
+        "cold_first_query_ms": 4.37,
+        "cold_first_query_results": 8,
+        "recall": {
+          "n": 200,
+          "p50": 1.76,
+          "p95": 2.44,
+          "p99": 2.74,
+          "mean": 1.74,
+          "min": 0.68,
+          "max": 2.9
+        },
+        "recall_avg_results": 7.94,
+        "context": {
+          "n": 200,
+          "p50": 5.4,
+          "p95": 8.09,
+          "p99": 12.76,
+          "mean": 5.88,
+          "min": 3.83,
+          "max": 22.22
+        },
+        "rss_mb": 67.7,
+        "tokens": {
+          "queries": 100,
+          "full_dump_tokens": 113373,
+          "full_dump_chars": 453492,
+          "brain_context_obs_only": {
+            "mean": 556,
+            "p50": 563,
+            "p95": 568,
+            "max": 572
+          },
+          "brain_context_as_shipped": {
+            "mean": 1321,
+            "p50": 1407,
+            "p95": 1433,
+            "max": 1436
+          },
+          "reduction_pct_obs_only": 99.51,
+          "reduction_pct_as_shipped": 98.84,
+          "note": "tokens = chars/4. full dump = every observation as \"- [project] title: narrative\" (no cap). obs_only = retrieveContext with wiki/learnings/workflows off; as_shipped = taskContext (also reads this repo's wiki/learnings/workflows, which are not synthetic)."
+        }
+      },
+      "hybrid": {
+        "mode": "hybrid",
+        "size": 1000,
+        "import_ms": 6.94,
+        "cold_first_query_ms": 112.07,
+        "cold_first_query_results": 8,
+        "recall": {
+          "n": 200,
+          "p50": 5.05,
+          "p95": 9.04,
+          "p99": 15.37,
+          "mean": 5.63,
+          "min": 2.95,
+          "max": 31.67
+        },
+        "recall_avg_results": 8,
+        "context": {
+          "n": 200,
+          "p50": 10.46,
+          "p95": 15.11,
+          "p99": 19.11,
+          "mean": 10.92,
+          "min": 7.08,
+          "max": 26.14
+        },
+        "semantic_only": {
+          "n": 200,
+          "p50": 3.3,
+          "p95": 6.3,
+          "p99": 12.06,
+          "mean": 3.86,
+          "min": 2.24,
+          "max": 30.31
+        },
+        "queries_with_semantic_hits": 174,
+        "note": "semantic_only = query embed + int8 scan + top-50 selection (no BM25, no row fetch)",
+        "rss_mb": 157.37,
+        "tokens": {
+          "queries": 100,
+          "full_dump_tokens": 113373,
+          "full_dump_chars": 453492,
+          "brain_context_obs_only": {
+            "mean": 562,
+            "p50": 562,
+            "p95": 568,
+            "max": 571
+          },
+          "brain_context_as_shipped": {
+            "mean": 1327,
+            "p50": 1409,
+            "p95": 1432,
+            "max": 1436
+          },
+          "reduction_pct_obs_only": 99.5,
+          "reduction_pct_as_shipped": 98.83,
+          "note": "tokens = chars/4. full dump = every observation as \"- [project] title: narrative\" (no cap). obs_only = retrieveContext with wiki/learnings/workflows off; as_shipped = taskContext (also reads this repo's wiki/learnings/workflows, which are not synthetic)."
+        }
+      }
+    },
+    {
+      "size": 10000,
+      "store": {
+        "size": 10000,
+        "db_bytes_text_fts": 16707584,
+        "db_bytes_with_vectors": 21159936,
+        "db_mb_text_fts": 15.93,
+        "db_mb_with_vectors": 20.18,
+        "bytes_per_obs_text_fts": 1671,
+        "bytes_per_obs_with_vectors": 2116,
+        "avg_text_chars_per_obs": 690,
+        "ingest": {
+          "rows": 10000,
+          "insert_ms": 789.58,
+          "obs_per_s": 12665,
+          "synth_gen_ms": 50.45,
+          "note": "batched 1000-row transactions, product schema incl. FTS5 triggers"
+        },
+        "vectors": {
+          "rows": 10000,
+          "insert_ms": 108.62,
+          "vec_per_s": 92068,
+          "planted_neighbour_rows": 1813,
+          "note": null
+        }
+      },
+      "bm25": {
+        "mode": "bm25",
+        "size": 10000,
+        "import_ms": 7.82,
+        "cold_first_query_ms": 18.42,
+        "cold_first_query_results": 8,
+        "recall": {
+          "n": 200,
+          "p50": 12.14,
+          "p95": 21.36,
+          "p99": 25,
+          "mean": 12.25,
+          "min": 0.96,
+          "max": 27.67
+        },
+        "recall_avg_results": 7.97,
+        "context": {
+          "n": 200,
+          "p50": 10.83,
+          "p95": 16.72,
+          "p99": 21.04,
+          "mean": 11.38,
+          "min": 6.29,
+          "max": 36.24
+        },
+        "rss_mb": 69.1,
+        "tokens": {
+          "queries": 100,
+          "full_dump_tokens": 1131367,
+          "full_dump_chars": 4525468,
+          "brain_context_obs_only": {
+            "mean": 560,
+            "p50": 561,
+            "p95": 567,
+            "max": 569
+          },
+          "brain_context_as_shipped": {
+            "mean": 1325,
+            "p50": 1406,
+            "p95": 1432,
+            "max": 1435
+          },
+          "reduction_pct_obs_only": 99.95,
+          "reduction_pct_as_shipped": 99.88,
+          "note": "tokens = chars/4. full dump = every observation as \"- [project] title: narrative\" (no cap). obs_only = retrieveContext with wiki/learnings/workflows off; as_shipped = taskContext (also reads this repo's wiki/learnings/workflows, which are not synthetic)."
+        }
+      },
+      "hybrid": {
+        "mode": "hybrid",
+        "size": 10000,
+        "import_ms": 6.67,
+        "cold_first_query_ms": 157.98,
+        "cold_first_query_results": 8,
+        "recall": {
+          "n": 200,
+          "p50": 18.7,
+          "p95": 28.48,
+          "p99": 32.41,
+          "mean": 18.88,
+          "min": 6.86,
+          "max": 34.08
+        },
+        "recall_avg_results": 8,
+        "context": {
+          "n": 200,
+          "p50": 20.83,
+          "p95": 31.22,
+          "p99": 49.28,
+          "mean": 22.1,
+          "min": 12.67,
+          "max": 83.71
+        },
+        "semantic_only": {
+          "n": 200,
+          "p50": 8.68,
+          "p95": 10.84,
+          "p99": 14.39,
+          "mean": 8.94,
+          "min": 6.92,
+          "max": 34.9
+        },
+        "queries_with_semantic_hits": 174,
+        "note": "semantic_only = query embed + int8 scan + top-50 selection (no BM25, no row fetch)",
+        "rss_mb": 172.73,
+        "tokens": {
+          "queries": 100,
+          "full_dump_tokens": 1131367,
+          "full_dump_chars": 4525468,
+          "brain_context_obs_only": {
+            "mean": 562,
+            "p50": 562,
+            "p95": 569,
+            "max": 570
+          },
+          "brain_context_as_shipped": {
+            "mean": 1326,
+            "p50": 1407,
+            "p95": 1433,
+            "max": 1437
+          },
+          "reduction_pct_obs_only": 99.95,
+          "reduction_pct_as_shipped": 99.88,
+          "note": "tokens = chars/4. full dump = every observation as \"- [project] title: narrative\" (no cap). obs_only = retrieveContext with wiki/learnings/workflows off; as_shipped = taskContext (also reads this repo's wiki/learnings/workflows, which are not synthetic)."
+        }
+      },
+      "keep": true
+    },
+    {
+      "size": 50000,
+      "store": {
+        "size": 50000,
+        "db_bytes_text_fts": 82698240,
+        "db_bytes_with_vectors": 104722432,
+        "db_mb_text_fts": 78.87,
+        "db_mb_with_vectors": 99.87,
+        "bytes_per_obs_text_fts": 1654,
+        "bytes_per_obs_with_vectors": 2094,
+        "avg_text_chars_per_obs": 690,
+        "ingest": {
+          "rows": 50000,
+          "insert_ms": 4112.61,
+          "obs_per_s": 12158,
+          "synth_gen_ms": 206.46,
+          "note": "batched 1000-row transactions, product schema incl. FTS5 triggers"
+        },
+        "vectors": {
+          "rows": 50000,
+          "insert_ms": 478.83,
+          "vec_per_s": 104421,
+          "planted_neighbour_rows": 1952,
+          "note": null
+        }
+      },
+      "bm25": {
+        "mode": "bm25",
+        "size": 50000,
+        "import_ms": 7.6,
+        "cold_first_query_ms": 85.68,
+        "cold_first_query_results": 8,
+        "recall": {
+          "n": 200,
+          "p50": 60.9,
+          "p95": 103.17,
+          "p99": 138.78,
+          "mean": 59.79,
+          "min": 1.58,
+          "max": 227.15
+        },
+        "recall_avg_results": 8,
+        "context": {
+          "n": 200,
+          "p50": 37.33,
+          "p95": 57.35,
+          "p99": 76.86,
+          "mean": 38.99,
+          "min": 15.27,
+          "max": 160.79
+        },
+        "rss_mb": 71.99,
+        "tokens": {
+          "queries": 100,
+          "full_dump_tokens": 5662982,
+          "full_dump_chars": 22651928,
+          "brain_context_obs_only": {
+            "mean": 561,
+            "p50": 562,
+            "p95": 570,
+            "max": 572
+          },
+          "brain_context_as_shipped": {
+            "mean": 1326,
+            "p50": 1407,
+            "p95": 1433,
+            "max": 1442
+          },
+          "reduction_pct_obs_only": 99.99,
+          "reduction_pct_as_shipped": 99.98,
+          "note": "tokens = chars/4. full dump = every observation as \"- [project] title: narrative\" (no cap). obs_only = retrieveContext with wiki/learnings/workflows off; as_shipped = taskContext (also reads this repo's wiki/learnings/workflows, which are not synthetic)."
+        }
+      },
+      "hybrid": {
+        "mode": "hybrid",
+        "size": 50000,
+        "import_ms": 11.7,
+        "cold_first_query_ms": 363.6,
+        "cold_first_query_results": 8,
+        "recall": {
+          "n": 200,
+          "p50": 94.95,
+          "p95": 169.73,
+          "p99": 188.42,
+          "mean": 98.43,
+          "min": 24.57,
+          "max": 230.47
+        },
+        "recall_avg_results": 8,
+        "context": {
+          "n": 200,
+          "p50": 71.4,
+          "p95": 111.43,
+          "p99": 132.15,
+          "mean": 75.36,
+          "min": 44.15,
+          "max": 175.5
+        },
+        "semantic_only": {
+          "n": 200,
+          "p50": 28.21,
+          "p95": 37.19,
+          "p99": 52.43,
+          "mean": 29.03,
+          "min": 22.04,
+          "max": 96.59
+        },
+        "queries_with_semantic_hits": 174,
+        "note": "semantic_only = query embed + int8 scan + top-50 selection (no BM25, no row fetch)",
+        "rss_mb": 212.42,
+        "tokens": {
+          "queries": 100,
+          "full_dump_tokens": 5662982,
+          "full_dump_chars": 22651928,
+          "brain_context_obs_only": {
+            "mean": 561,
+            "p50": 562,
+            "p95": 569,
+            "max": 572
+          },
+          "brain_context_as_shipped": {
+            "mean": 1326,
+            "p50": 1405,
+            "p95": 1432,
+            "max": 1441
+          },
+          "reduction_pct_obs_only": 99.99,
+          "reduction_pct_as_shipped": 99.98,
+          "note": "tokens = chars/4. full dump = every observation as \"- [project] title: narrative\" (no cap). obs_only = retrieveContext with wiki/learnings/workflows off; as_shipped = taskContext (also reads this repo's wiki/learnings/workflows, which are not synthetic)."
+        }
+      }
+    },
+    {
+      "size": 100000,
+      "store": {
+        "size": 100000,
+        "db_bytes_text_fts": 163913728,
+        "db_bytes_with_vectors": 209518592,
+        "db_mb_text_fts": 156.32,
+        "db_mb_with_vectors": 199.81,
+        "bytes_per_obs_text_fts": 1639,
+        "bytes_per_obs_with_vectors": 2095,
+        "avg_text_chars_per_obs": 690,
+        "ingest": {
+          "rows": 100000,
+          "insert_ms": 11515.58,
+          "obs_per_s": 8684,
+          "synth_gen_ms": 520.52,
+          "note": "batched 1000-row transactions, product schema incl. FTS5 triggers"
+        },
+        "vectors": {
+          "rows": 100000,
+          "insert_ms": 1870.61,
+          "vec_per_s": 53458,
+          "planted_neighbour_rows": 1980,
+          "note": null
+        }
+      },
+      "bm25": {
+        "mode": "bm25",
+        "size": 100000,
+        "import_ms": 13.31,
+        "cold_first_query_ms": 290,
+        "cold_first_query_results": 8,
+        "recall": {
+          "n": 200,
+          "p50": 152.39,
+          "p95": 271.64,
+          "p99": 341.75,
+          "mean": 152.72,
+          "min": 2.6,
+          "max": 403.16
+        },
+        "recall_avg_results": 8,
+        "context": {
+          "n": 200,
+          "p50": 87.25,
+          "p95": 151.76,
+          "p99": 185.12,
+          "mean": 92.65,
+          "min": 31.57,
+          "max": 242.94
+        },
+        "rss_mb": 72.02,
+        "tokens": {
+          "queries": 100,
+          "full_dump_tokens": 11320493,
+          "full_dump_chars": 45281970,
+          "brain_context_obs_only": {
+            "mean": 560,
+            "p50": 562,
+            "p95": 569,
+            "max": 572
+          },
+          "brain_context_as_shipped": {
+            "mean": 1325,
+            "p50": 1406,
+            "p95": 1431,
+            "max": 1442
+          },
+          "reduction_pct_obs_only": 100,
+          "reduction_pct_as_shipped": 99.99,
+          "note": "tokens = chars/4. full dump = every observation as \"- [project] title: narrative\" (no cap). obs_only = retrieveContext with wiki/learnings/workflows off; as_shipped = taskContext (also reads this repo's wiki/learnings/workflows, which are not synthetic)."
+        }
+      },
+      "hybrid": {
+        "mode": "hybrid",
+        "size": 100000,
+        "import_ms": 11.97,
+        "cold_first_query_ms": 897.28,
+        "cold_first_query_results": 8,
+        "recall": {
+          "n": 200,
+          "p50": 211.28,
+          "p95": 384.29,
+          "p99": 478.64,
+          "mean": 223.11,
+          "min": 46.85,
+          "max": 510.77
+        },
+        "recall_avg_results": 8,
+        "context": {
+          "n": 200,
+          "p50": 121.81,
+          "p95": 186.97,
+          "p99": 234.44,
+          "mean": 130.23,
+          "min": 69.52,
+          "max": 255.75
+        },
+        "semantic_only": {
+          "n": 200,
+          "p50": 47.5,
+          "p95": 78.43,
+          "p99": 92.87,
+          "mean": 52.54,
+          "min": 39.87,
+          "max": 102.48
+        },
+        "queries_with_semantic_hits": 174,
+        "note": "semantic_only = query embed + int8 scan + top-50 selection (no BM25, no row fetch)",
+        "rss_mb": 229.94,
+        "tokens": {
+          "queries": 100,
+          "full_dump_tokens": 11320493,
+          "full_dump_chars": 45281970,
+          "brain_context_obs_only": {
+            "mean": 561,
+            "p50": 562,
+            "p95": 569,
+            "max": 571
+          },
+          "brain_context_as_shipped": {
+            "mean": 1326,
+            "p50": 1406,
+            "p95": 1431,
+            "max": 1441
+          },
+          "reduction_pct_obs_only": 100,
+          "reduction_pct_as_shipped": 99.99,
+          "note": "tokens = chars/4. full dump = every observation as \"- [project] title: narrative\" (no cap). obs_only = retrieveContext with wiki/learnings/workflows off; as_shipped = taskContext (also reads this repo's wiki/learnings/workflows, which are not synthetic)."
+        }
+      }
+    }
+  ],
+  "embedder": {
+    "available": true,
+    "model": "Xenova/all-MiniLM-L6-v2",
+    "dim": 384,
+    "model_load_ms": 122.29,
+    "query_encode_warm": {
+      "n": 100,
+      "p50": 1.25,
+      "p95": 2.53,
+      "p99": 2.77,
+      "mean": 1.37,
+      "min": 0.57,
+      "max": 2.78
+    },
+    "doc_embed_obs_per_s": 137.93,
+    "doc_embed_note": "batch of 8, real ~500-char synthetic memories (what `brain embed --apply` does per row)",
+    "rss_mb": 202.9
+  },
+  "model_dir_used": "evals/longmemeval/data/models",
+  "ingest_single_txn": {
+    "rows": 1000,
+    "obs_per_s": 8082,
+    "per_insert": {
+      "n": 1000,
+      "p50": 0.1,
+      "p95": 0.26,
+      "p99": 0.6,
+      "mean": 0.12,
+      "min": 0.07,
+      "max": 1.28
+    },
+    "note": "one autocommit transaction per row (WAL), as a capture hook would write"
+  },
+  "sessionstart": {
+    "store_size": 10000,
+    "in_process": {
+      "store_project_count": 30,
+      "first_call_ms": 96.06,
+      "first_call_rows": 60,
+      "all_projects": {
+        "n": 210,
+        "p50": 7.15,
+        "p95": 13.46,
+        "p99": 15.77,
+        "mean": 8.49,
+        "min": 5.05,
+        "max": 23.92
+      },
+      "largest_project": {
+        "project": "atlas-api",
+        "total": 1454,
+        "rows": 60,
+        "tokens": 1933,
+        "bytes": 7885,
+        "preview_chars": 1725,
+        "p50": 13.54
+      },
+      "max_block_bytes": 8124,
+      "max_block_tokens": 1995,
+      "max_preview_chars": 1818,
+      "caps": {
+        "MAX_OUTPUT_BYTES": 9000,
+        "DEFAULT_BUDGET_TOKENS": 2000,
+        "DEFAULT_MAX_ROWS": 60,
+        "PREVIEW_MAX_BYTES": 3500
+      },
+      "note": "in-process render of the full hook payload (additionalContext block + terminal preview), record:false"
+    },
+    "hook_process_wall_ms": {
+      "n": 9,
+      "p50": 84.48,
+      "p95": 104.58,
+      "p99": 104.58,
+      "mean": 87.03,
+      "min": 78.19,
+      "max": 104.58,
+      "runs": 9,
+      "first": 84.48,
+      "note": "spawn `node bin/lib/sessionstart.mjs --hook` end to end, largest project; first run included in stats"
+    },
+    "bare_node_startup_ms": {
+      "p50": 47.9
+    },
+    "hook_additionalContext_bytes": 7885,
+    "hook_reason": null
+  },
+  "mcp": {
+    "cold_start": {
+      "runs": 7,
+      "empty_home": true,
+      "initialize_ms": {
+        "median": 57.62,
+        "min": 53.55,
+        "max": 68.5
+      },
+      "tools_list_ms": {
+        "median": 57.65,
+        "min": 53.6,
+        "max": 68.52
+      },
+      "tools": 5,
+      "tool_names": [
+        "brain_remember",
+        "brain_recall",
+        "brain_context",
+        "brain_skills",
+        "brain_skill"
+      ],
+      "note": "spawn -> first JSON-RPC response on stdout; includes node startup"
+    },
+    "e2e_store_size": 10000,
+    "e2e_first_call": {
+      "name": "brain_recall",
+      "ms": 199.04,
+      "note": "first call in a fresh server: loads model + vectors when the store has them (server answers BM25 past a 2.5 s budget)"
+    },
+    "e2e_brain_recall_ms": {
+      "n": 60,
+      "p50": 27.89,
+      "p95": 46.95,
+      "p99": 199.04,
+      "mean": 31.9,
+      "min": 12.56,
+      "max": 199.04
+    },
+    "e2e_brain_context_ms": {
+      "n": 60,
+      "p50": 29.35,
+      "p95": 51.78,
+      "p99": 123.05,
+      "mean": 33.52,
+      "min": 20.74,
+      "max": 123.05
+    },
+    "e2e_errors": 0,
+    "e2e_avg_response_bytes": {
+      "brain_recall": 4716,
+      "brain_context": 6068
+    },
+    "note": "JSON-RPC over stdio on the synthetic store (hybrid when the model is present; vectors are synthetic so ranking quality is not measured)"
+  },
+  "footprint": {
+    "runtime_dependencies": 0,
+    "runtime_dependency_names": [],
+    "optional_dependencies": {
+      "@huggingface/transformers": "^4.3.0"
+    },
+    "node_engine": ">=22",
+    "bin_js_files": 71,
+    "bin_js_lines": 22497,
+    "model_on_disk_mb": 22.59,
+    "model_path": "evals/longmemeval/data/models/Xenova/all-MiniLM-L6-v2"
+  }
+}

@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# Fake macOS `security` — file-backed keychain at $SB_KEYCHAIN (one per sandbox "Mac").
+# The real login keychain is never read or written.
+#   security <cmd> [opts]   one command from argv (reads/deletes; old-style adds still work)
+#   security -i             commands from stdin, one per line — how keychain.mjs writes a
+#                           secret, so the value is never on argv (`ps`). Lines are split like
+#                           the real tool (probed read-only on macOS): whitespace separates;
+#                           a backslash escapes the next character, in or out of quotes; a
+#                           " opens a quote only at the start of a token (a"b is literal) and
+#                           the closing " ends the token ("a"b is two); "" is an empty token,
+#                           not dropped. The exit status is the last command's.
+# An add whose -w is the last word would make the real tool prompt for the password;
+# here it fails instead (there is no terminal to prompt on).
+# The log has one line per command. An add's -w value is never logged: it shows as
+# <redacted:argv> or <redacted:stdin>, so tests can prove secrets left argv.
+set -uo pipefail
+: "${SB_KEYCHAIN:?}"; mkdir -p "$SB_KEYCHAIN"
+
+run() { # run <argv|stdin> <cmd> [opts...]
+  local via="$1" op="${2:-}"; shift 2
+  [ "$op" = sb-args ] && { [ $# -gt 0 ] && printf '%s\0' "$@"; return 0; }   # test hook: the split words
+  local s="" a="" w="" want=0 shown=() x i
+  for x in "$@"; do shown+=("$x"); done
+  if [ "$op" = add-generic-password ]; then
+    for i in "${!shown[@]}"; do [ "${shown[$i]}" = -w ] && shown[$((i+1))]="<redacted:$via>"; done
+  fi
+  echo "security $op ${shown[*]-}" >> "${SB_LOG:-/dev/null}"
+  while [ $# -gt 0 ]; do case "$1" in -s) s="$2"; shift;; -a) a="$2"; shift;;
+    -w) if [ "$op" != add-generic-password ]; then want=1
+        elif [ $# -lt 2 ]; then echo "security: -w is last: would prompt for the password" >&2; return 1
+        else w="$2"; shift; fi;; esac; shift; done
+  local f="$SB_KEYCHAIN/${s}__${a}"
+  case "$op" in
+    find-generic-password) [ -f "$f" ] || { echo "security: The specified item could not be found in the keychain." >&2; return 44; }
+                           [ $want = 1 ] && cat "$f"; return 0;;
+    add-generic-password)  [ "${SB_KEYCHAIN_DENY:-}" = 1 ] && return 0   # simulate silent refusal
+                           printf '%s\n' "$w" > "$f"; chmod 600 "$f"; return 0;;
+    delete-generic-password) rm -f "$f"; return 0;;
+  esac
+  return 1
+}
+
+if [ "${1:-}" = -i ]; then
+  echo "security -i" >> "${SB_LOG:-/dev/null}"
+  rc=0
+  while IFS= read -r line || [ -n "$line" ]; do
+    args=(); cur=""; have=0; inq=0; i=0; n=${#line}
+    while [ $i -lt $n ]; do
+      c="${line:$i:1}"
+      if [ "$c" = '\' ] && [ $((i+1)) -lt $n ]; then i=$((i+1)); cur+="${line:$i:1}"; have=1
+      elif [ $inq = 1 ]; then
+        if [ "$c" = '"' ]; then args+=("$cur"); cur=""; have=0; inq=0
+        else cur+="$c"; fi
+      else
+        case "$c" in
+          ' '|$'\t') [ $have = 1 ] && args+=("$cur"); cur=""; have=0;;
+          '"') if [ $have = 0 ]; then inq=1; have=1; else cur+="$c"; fi;;
+          *) cur+="$c"; have=1;;
+        esac
+      fi
+      i=$((i+1))
+    done
+    [ $have = 1 ] && args+=("$cur")
+    [ ${#args[@]} = 0 ] && continue
+    [ "${args[0]}" = quit ] && break
+    run stdin "${args[@]}"; rc=$?
+  done
+  exit $rc
+fi
+run argv "$@"

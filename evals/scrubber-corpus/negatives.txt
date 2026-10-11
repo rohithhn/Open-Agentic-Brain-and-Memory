@@ -1,0 +1,88 @@
+# scrubber corpus — NEGATIVES
+# Every non-comment, non-blank line MUST produce ZERO detector hits.
+# These are the shapes that actually dominate this project's observations
+# (measured 2026-08-04 over 21,070 rows: 3,526 git-SHA-like tokens, 391 UUIDs,
+#  442 tokens of 40+ chars, 36 base64 image fragments). A naive entropy rule
+# fires on all of them, which is why this file is the real acceptance gate.
+# No line here is a secret, so unlike positives.txt nothing is encoded — two
+# lines that originally embedded a real path/username were swapped for
+# generic placeholders (they test path/URL shapes, not who owns them).
+
+# ── git object ids ──────────────────────────────────────────────────────────
+Reverted 4b454c7 after the Learnings tab regressed the sync status pill
+Cherry-picked faeee58e21d5b09c7a4e3f18d6b2c07a95fe3d41 onto the release branch
+git diff d7e3cb5..6d1f1ee showed only whitespace in bin/lib/dream.mjs
+The bisect landed on commit 4e5b378a9c2f1e6d8b04a7359fc21e0d5b83a6c4 (Phase 4 ingest)
+Tag v1.0.0 points at 9f2a1c8; the Release asset was built from 3e7b04d
+merge-base of feat/always-on-and-learnings-ui and main is 8c1d29fa4b7e05639dd2c1a80fe37b95d40e6a12
+Short SHAs in the changelog: a1b2c3d, e4f5a6b, 0d9c8b7, 12ab34c
+`git rev-parse HEAD` returned 71b3f0d5c9e28a4617fd0b3c95ea72d18f406b5c inside the worktree
+
+# ── uuids / session + trace ids ─────────────────────────────────────────────
+Session c4a43fb5-fe03-4774-b4c2-4b7c0b79134e wrote 14 observations before the worker restarted
+memory_session_id cursor:9f8e7d6c-5b4a-3210-9876-fedcba098765 had no user turns, skipped
+composerData:1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d contained 42 bubbles
+The trace id 0af7651916cd43dd8448eb211c80319c matched the failing span
+X-Request-Id: 550e8400-e29b-41d4-a716-446655440000 appeared in every retried call
+launchd job com.claudebrain.ingest ran under uuid 6ba7b810-9dad-11d1-80b4-00c04fd430c8
+
+# ── content hashes, checksums, integrity strings ────────────────────────────
+content_hash 3f9a2c1b14 deduped the observation against the existing row
+sha256 of the blob: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+shasum -a 512 gave cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e
+package-lock integrity: sha512-Zt3P5Xq0Qm4Kf9Vb2Nc8Yw3EaHs6UgJi8OtXrMnBvCzAsDfGhJkLpQwErTyUiOpAsDfGhJkLpQwErTyUiOpAsDfGhJkLpQwErTyUiOpAsDfGh==
+npm reported integrity sha1-Kd82Lm4Qp7Rz1Vb9NcYw3EaHs6U= for the legacy tarball
+md5sum of memory/brain.age is 9e107d9d372bb6826bd81d3542a419d6
+The docker image digest is sha256:8a1f2c9d4b7e6a3f05c81d2e9b47a63f0c5e18d92a4b7c630fe81d25a9b47c3e
+CRC32 checksum 3d4f8a91 matched after the WAL checkpoint
+
+# ── base64-ish blobs that are not credentials ───────────────────────────────
+The favicon inlined as data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==
+Screenshot embedded via data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/
+The SVG sprite was inlined as data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PC9zdmc+
+Font subset shipped as data:font/woff2;base64,d09GMgABAAAAAAoAAA0AAAAAFRwAAAmoAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmAAgkIKgVyBIQsGAAE2AiQDCAQgBYMdBzIbnBLIhof
+
+# ── file paths, urls, identifiers ───────────────────────────────────────────
+Read /Users/x/dev/Brain-claude-mem/bin/lib/ingest.mjs lines 240-292
+The plist lives at ~/Library/LaunchAgents/com.claudebrain.watch-codex.plist
+Cursor state DB: ~/Library/Application Support/Cursor/User/globalStorage/state.vscdb
+Fetched https://api.github.com/repos/example-user/claude-brain/releases/tags/brain-latest
+The blob is at memory/brain.age (33MB) and never enters git history
+node_modules/.pnpm/typescript@5.4.5/node_modules/typescript/lib/tsc.js was 8.2MB
+Bundle chunk written to ui/assets/app-Bq7dK2Lm.js after the vite build
+Postgres URL without credentials: postgres://db.internal.example.com:5432/prod
+Connected to redis://cache.internal:6379/0 using the default user
+Docs at https://docs.example.com/v1/authentication#bearer-tokens explain the flow
+
+# ── prose that mentions credentials without containing one ──────────────────
+Rotated the GitHub token after the leak scare; the new one lives in Keychain only
+Explained that the age secret key never leaves the Mac's Keychain and is never committed
+The Authorization header was missing entirely, which is why every request 401'd
+Set the password policy to 16 characters minimum with no reuse for 5 cycles
+password= appeared in the log format string but the value was already masked upstream
+Documented that ANTHROPIC_API_KEY must be exported before running the eval
+The env var OPENAI_API_KEY was unset, so the provider fell back to Claude
+Decided settings/settings.json stays redacted via redactJsonText before every commit
+Discussed whether sk- prefixed keys should be detectable after redaction for auditing
+
+# ── already-redacted / placeholder values ───────────────────────────────────
+Committed settings.json with "token": "REDACTED-BY-CLAUDE-BRAIN" as expected
+The example config ships OPENAI_API_KEY=sk-YOUR-KEY-HERE for new users
+README shows AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE from the AWS docs
+Sample line: Authorization: Bearer <your-token-here>
+Test fixture used DATABASE_URL=postgres://user:password@localhost:5432/test_db
+Placeholder github_pat_XXXXXXXXXXXXXXXXXXXXXXXX in the contributing guide
+
+# ── long non-secret identifiers and technical strings ───────────────────────
+The FTS5 external-content table observations_fts_docsize grew to 41MB after the backfill
+BM25 ranking improved recall from 15% to 65% with k1=1.2 and b=0.75
+Chroma collection claude_mem_observations_v3_20260731_rebuilt was reindexed overnight
+The launchd label com.claudebrain.ingest.periodic.every600s reloads idempotently
+Ran: node bin/brain.mjs distill --since 24 --max 8 --dry
+Concept list was ["imported","cursor","integration","test-coverage","architecture"]
+Model id claude-opus-4-1-20250805 replaced claude-3-5-sonnet-20241022 in the provider config
+Base32 recovery phrase field name is TOTP_SECRET but the value was never printed
+The 51-character bundle id org.example.internal.tooling.brainsync.helper was registered
+CSS class .observation-card__title--truncated-with-ellipsis-and-tooltip was renamed
+The user-agent string was Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Encoded the query as eyJxdWVyeSI6InByb2plY3RzIn0 in the URL fragment for the UI deep link

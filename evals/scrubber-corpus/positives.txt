@@ -1,0 +1,75 @@
+# scrubber corpus — POSITIVES
+# Every non-comment, non-blank line MUST produce at least one detector hit.
+# Format:  <detector-id>\t<base64(line of realistic observation text)>
+# ALL VALUES ARE FAKE. Structurally valid, cryptographically meaningless.
+# Do not "fix" a value to make it look more real — that would put a live secret in git.
+#
+# ── encoding ──────────────────────────────────────────────────────────────
+# The payload column (everything after the tab) is base64 of the plaintext
+# observation line, decoded at test runtime by evals/scrub-test.mjs before it
+# is handed to findSecrets()/scrubText(). This is NOT obfuscation for
+# security — the values are fake and safe to print — it exists purely so this
+# file's plaintext bytes never contain a string shaped like a real credential,
+# which is what a generic pre-commit secret guard (rightly) alarms on. The
+# detector-id column stays plain text, so a reviewer can tell what every line
+# is exercising (e.g. "this line tests AWS access key ID recall") without
+# decoding anything; decode a line by hand with e.g.
+#   node -e "console.log(Buffer.from(process.argv[1], 'base64').toString())" '<payload>'
+# to inspect the exact fake value if needed. All 46 payload lines use this
+# scheme uniformly (not just the ones a guard currently flags), so the file
+# stays guard-proof even if future detectors add more literal patterns.
+
+# ── provider-prefixed tokens ─────────────────────────────────────────────────
+aws-access-key-id	U2V0IEFXU19BQ0NFU1NfS0VZX0lEPUFLSUE0S0ZaUTJYSjdXUExNTjNEIGluIHRoZSBkZXBsb3kgc2hlbGwgYmVmb3JlIHJ1bm5pbmcgdGVycmFmb3JtIGFwcGx5
+aws-access-key-id	VGhlIGZhaWxpbmcgam9iIHVzZWQgQUtJQVpaM1BRN1dMTU42VFhWQkQgd2hpY2ggbm8gbG9uZ2VyIGhhcyBzMzpQdXRPYmplY3Q=
+aws-secret-access-key	ZXhwb3J0IEFXU19TRUNSRVRfQUNDRVNTX0tFWT13SmFsclhVdG5GRU1JL0s3TURFTkcvYlB4UmZpQ1lFWEFNUExFS0VZMQ==
+github-token	UmFuOiBnaCBhdXRoIGxvZ2luIC0td2l0aC10b2tlbiA8PDwgZ2hwXzlmUTJtVnJLN2RMcFhuNFdzVDFiWWNIajZaYUUwb1IzdUk4Zw==
+github-token	Q0kgZmFpbGVkIGJlY2F1c2UgR0hfVE9LRU49Z2hvX0ExYjJDM2Q0RTVmNkc3aDhJOWowSzFsMk0zbjRPNXA2UTdyOCBoYWQgZXhwaXJlZA==
+github-token	VGhlIEFjdGlvbnMgcnVubmVyIGV4cG9ydGVkIEdJVEhVQl9UT0tFTj1naHNfWnE4V3YyTng1UnQ3WXUxSXAzT2w2S2E5U2Q0RmcwSGoyTA==
+github-token	Q2xvbmVkIHdpdGggZ2h1XzdtS2o0SGcyRmQ5U2ExUXc4RXI1VHkzVWk2T3AwWngyQ3Y0Qm4gYXMgdGhlIHVzZXIgdG9rZW4=
+github-fine-grained-pat	U3RvcmVkIGdpdGh1Yl9wYXRfMTFBQkNERUZHMGFCY0RlRmdIaUprTF9abVhjVmJOcVdlUnRZdUlvUGFTZEZnSGpLbFp4Q3ZCbk0xMjM0NTY3ODkwQWIgaW4gLmVudg==
+openai-key	T1BFTkFJX0FQSV9LRVk9c2stcHJvai05ZEtxMkxtWjh2WHQ0V2JOcjZIY1lhUGpFczFVZ09pM1F3RXJUeVVpT3BBc0RmR2ggbWFkZSB0aGUgU0RLIGNhbGwgc3VjY2VlZA==
+openai-key	TGVnYWN5IGtleSBzay1YazI5TG1RcDRSdFo3VmIxTmNZdzNFYUhzNlVnSmk4TyBzdGlsbCB3b3JrZWQgYWdhaW5zdCB2MS9jb21wbGV0aW9ucw==
+anthropic-key	QU5USFJPUElDX0FQSV9LRVk9c2stYW50LWFwaTAzLUtkODJMbTRRcDdSejFWYjlOY1l3M0VhSHM2VWdKaThPdFhyTW5CdkN6QXNEZkdoSmtMcFF3RXJUeVVpT3AtQUE5d2dBQQ==
+slack-token	Qm90IHBvc3RlZCB3aXRoIHhveGItMjk0MTg4MzcyMi00ODIwMTc0OTYyMzgxLU44ZEtxMkxtWjh2WHQ0V2JOcjZIY1lhUA==
+slack-token	TGVnYWN5IHVzZXIgdG9rZW4geG94cC0xMTAyOTM4NDc1LTY1NzQ4MzkyMDEtODg3NzY2NTU0NC1hMWIyYzNkNGU1ZjZhN2I4YzlkMGUxZjJhM2I0YzVkNiBpbiB0aGUgb2xkIHNjcmlwdA==
+slack-token	UmVmcmVzaCBmbG93IHJldHVybmVkIHhveHItMjk0MTg4MzcyMi00ODIwMTc0OTYyMzgxLVF3RXJUeVVpT3BBc0RmR2hKa0xw
+google-api-key	TWFwcyBlbWJlZCB1c2VkIEFJemFTeUQ5a1EyTG00UXA3UnoxVmI5TmNZdzNFYUhzNlVnSmk4T3QgYXMgdGhlIGJyb3dzZXIga2V5
+stripe-secret-key	Q2hlY2tvdXQgdXNlZCBza19saXZlXzUxS2Q4MkxtUXA3UnoxVmI5TmNZdzNFYUhzNlVnSmk4T3RYck1uQnZDekFz
+stripe-restricted-key	V2ViaG9vayB2ZXJpZmljYXRpb24gdXNlZCBya19saXZlXzUxUXc4RXI1VHkzVWk2T3AwWngyQ3Y0Qm43TWs0SGcyRmQ5U2Ex
+sendgrid-key	U0VOREdSSURfQVBJX0tFWT1TRy5LZDgyTG00UXA3UnoxVmI5TmNZdzNBLkVhSHM2VWdKaThPdFhyTW5CdkN6QXNEZkdoSmtMcFF3RXJUeVVpT3BY
+npm-token	Ly9yZWdpc3RyeS5ucG1qcy5vcmcvOl9hdXRoVG9rZW49bnBtXzlkS3EyTG1aOHZYdDRXYk5yNkhjWWFQakVzMVVnT2kzUXdFcg==
+age-secret-key	SW1wb3J0ZWQgaWRlbnRpdHkgQUdFLVNFQ1JFVC1LRVktMVFRUFFYVkoySzdXUExNTjNEWlE4UkZWSFk2VEdCNE5VSk01SUsyT0w5UFc3RVMzUkQ2VEY4WUdVSEo3UUs0WFpR
+private-key-pem	UGFzdGVkIHRoZSBkZXBsb3kga2V5OiAtLS0tLUJFR0lOIE9QRU5TU0ggUFJJVkFURSBLRVktLS0tLSBiM0JsYm5OemFDMXJaWGt0ZGpFQUFBQUFCRzV2Ym1VQUFBQUVibTl1WlFBQUFBQUFBQUFCQUFBQmx3QUFBQWR6YzJndGNu
+private-key-pem	VGhlIGNlcnQgYnVuZGxlIHN0YXJ0ZWQgd2l0aCAtLS0tLUJFR0lOIFJTQSBQUklWQVRFIEtFWS0tLS0tIE1JSUVwQUlCQUFLQ0FRRUEwelEyTG00UXA3UnoxVmI5TmNZdzNFYUhzNlVnSmk4T3RYck1uQnZDekFzRGZHaEpr
+private-key-pem	LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tIE1IY0NBUUVFSUtkODJMbTRRcDdSejFWYjlOY1l3M0VhSHM2VWdKaThPdFhyTW5CdkN6QXNvQW9HQ0NxR1NNNDk=
+jwt	RGVidWdnZWQgd2l0aCB0b2tlbiBleUpoYkdjaU9pSklVekkxTmlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKemRXSWlPaUl4TWpNME5UWTNPRGt3SWl3aWJtRnRaU0k2SWtwaGJtVWdSRzlsSWl3aWFXRjBJam94TlRFMk1qTTVNREl5ZlEuU2ZsS3h3UkpTTWVLS0YyUVQ0ZndwTWVKZjM2UE9rNnlKVl9hZFFzc3c1Yw==
+gitlab-token	Q0kgdXNlZCBnbHBhdC1LZDgyTG00UXA3UnoxVmI5TmNZIHRvIGNsb25lIHRoZSBpbnRlcm5hbCByZWdpc3RyeQ==
+twilio-key	VFdJTElPX0FVVEhfVE9LRU4gd2l0aCBTSUQgU0s5ZEtxMkxtNFFwN1J6MVZiOU5jWXczRWFIczZVZ0ppOCByb3RhdGVkIGFmdGVyIHRoZSBsZWFr
+azure-storage-key	QWNjb3VudEtleT1LZDgyTG00UXA3UnoxVmI5TmNZdzNFYUhzNlVnSmk4T3RYck1uQnZDekFzRGZHaEprTHBRd0VyVHlVaU9wQXNEZkdoSmtMcFF3RXJUeVVpT3BBc0RmR2g9PSBpbiB0aGUgY29ubmVjdGlvbiBzdHJpbmc=
+
+# ── context / assignment heuristics (no fixed prefix) ────────────────────────
+generic-assigned-secret	Rml4ZWQgdGhlIDUwMCBieSBzZXR0aW5nIERBVEFCQVNFX1BBU1NXT1JEPUhqN0txMkxtNFFwN1J6MVZiOU5jWXczRSBpbiB0aGUgcG9kIGVudg==
+generic-assigned-secret	VGhlIGRvY2tlciBydW4gbmVlZGVkIC1lIE1ZU1FMX1JPT1RfUEFTU1dPUkQ9elg0dkI3bk0ya1E5cEwxc0Q2Zkc4aEowIHRvIGJvb3Q=
+generic-assigned-secret	Y29uZmlnLmpzb24gaGFkICJhcGlfa2V5IjogImE4M2YwZDllMmI3YzQxZDZhZTU1ZjEwOGMzYjkyZTc3ZDQxYTZjYmYi
+generic-assigned-secret	Y2xpZW50X3NlY3JldD1RdzhFcjVUeTNVaTZPcDBaeDJDdjRCbjdNazRIZzJGZDlTYTEgd2FzIHJlamVjdGVkIGJ5IHRoZSBPQXV0aCBlbmRwb2ludA==
+generic-assigned-secret	U0VTU0lPTl9TRUNSRVQgPSAidTdZaDROajFNazhMcDJRdzVFcjlUeTNVaTZPcDBaeDJDdjRCbjdBIiDigJQgbW92ZWQgaXQgdG8gS2V5Y2hhaW4gYWZ0ZXJ3YXJkcw==
+generic-assigned-secret	U2V0IEFDQ0VTU19UT0tFTj0nZEdocGMybHpibTkwWVhKbFlXeDBiMnRsYm1KMWRHbDBhWE5zYjI1blpXNXZkV2RvJyBpbiB0aGUgdGVzdCBoYXJuZXNz
+generic-assigned-secret	Y3VybCAtSCAiWC1BcGktS2V5OiA3ZjNjOWExZTVkMmI4MDQ2YWY2YzMxZTliNTdkMDRhMmM4ZTE2ZjNiIiBodHRwczovL2ludGVybmFsLmV4YW1wbGUuY29tL3YxL3Bpbmc=
+authorization-bearer	UmVwcm9kdWNlZCB3aXRoOiBjdXJsIC1IICdBdXRob3JpemF0aW9uOiBCZWFyZXIgOWRLcTJMbVo4dlh0NFdiTnI2SGNZYVBqRXMxVWdPaTNRd0VyVHlVaScgaHR0cHM6Ly9hcGkuZXhhbXBsZS5jb20vbWU=
+authorization-basic	UmVxdWVzdCBoYWQgQXV0aG9yaXphdGlvbjogQmFzaWMgWVdSdGFXNDZjM1Z3WlhKelpXTnlaWFJ3WVhOemQyOXlaREV5TXc9PQ==
+connection-string-credentials	REFUQUJBU0VfVVJMPXBvc3RncmVzOi8vYXBwX3VzZXI6SGo3S3EyTG00UXA3UnpAZGIuaW50ZXJuYWwuZXhhbXBsZS5jb206NTQzMi9wcm9k
+connection-string-credentials	Q29ubmVjdGVkIHZpYSBtb25nb2RiK3NydjovL3N2Y19yZWFkZXI6elg0dkI3bk0ya1E5cEwxc0BjbHVzdGVyMC5hYmNkZS5tb25nb2RiLm5ldC9hbmFseXRpY3M=
+connection-string-credentials	QnJva2VuIHBpcGUgb24gbXlzcWw6Ly9yb290OlF3OEVyNVR5M1VpNk9wMFpAMTI3LjAuMC4xOjMzMDYvb3JkZXJz
+connection-string-credentials	YW1xcDovL3JhYmJpdDp1N1loNE5qMU1rOExwMlF3QHJhYmJpdC5zdmMuY2x1c3Rlci5sb2NhbDo1NjcyLyUyZiBrZXB0IGRyb3BwaW5n
+connection-string-credentials	cmVkaXM6Ly9kZWZhdWx0OmRHaHBjMmx6Ym05MFlYSmxZV3h3WVhOekBjYWNoZS5pbnRlcm5hbDo2Mzc5LzAgaW4gdGhlIHdvcmtlciBjb25maWc=
+netrc-credentials	QWRkZWQgdG8gfi8ubmV0cmM6IG1hY2hpbmUgYXBpLmV4YW1wbGUuY29tIGxvZ2luIGRlcGxveWJvdCBwYXNzd29yZCBIajdLcTJMbTRRcDdSejFWYjlOY1l3M0U=
+password-flag	UmFuIG15c3FsZHVtcCAtdSByb290IC0tcGFzc3dvcmQ9UXc4RXI1VHkzVWk2T3AwWngyQ3Y0Qm43IG9yZGVycyA+IGR1bXAuc3Fs
+password-flag	cHNxbCAiaG9zdD1kYi5pbnRlcm5hbCB1c2VyPWFwcCBwYXNzd29yZD16WDR2QjduTTJrUTlwTDFzRDZmRzhoSjAgZGJuYW1lPXByb2Qi
+
+# ── high-entropy heuristic (last-resort detector) ───────────────────────────
+# Tier 5 is DETECTED here (tiers 1-5, entropyMode 'redact' = the opt-in mode) but
+# at capture time it is review-only: the default scrubText() reports these lines
+# under `review` and leaves the text unredacted. evals/scrub-test.mjs asserts both.
+high-entropy-secret	VGhlIHdlYmhvb2sgc2lnbmluZyB2YWx1ZSB3YXMgWHE5I21SMiR2SzchcEw0QHdOOCZ6VDFeeUI2KmNKMyVoRzUgYW5kIGhhZCB0byBiZSByb3RhdGVk
+high-entropy-secret	VG9rZW4gaW4gdGhlIGhlYWRlcjogYzVKOHZRMm1YcjdLcExuNFdzVDFiWWNIajZaYUUwb1IzdUk4Z0RmMk5rOU12NkJx

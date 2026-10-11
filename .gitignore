@@ -1,0 +1,38 @@
+# ── default-deny: memory + personal state can never live here ────────────────
+memory/
+wiki/
+learnings/
+context/
+.brain-tmp/
+config.json
+MANIFEST.json
+settings/
+AGENTS.md
+plan.md
+LAUNCH_PLAN.md
+launch/
+
+# ── secrets ──────────────────────────────────────────────────────────────────
+*.identity
+*.age
+.env
+.env.*
+*secret*
+# engine code that merely has "secret" in its name (Linux secret backend)
+!bin/lib/secrets-linux.mjs
+# sandbox shim that fakes libsecret's secret-tool (test harness, holds no secrets)
+!evals/sandbox/shims-linux/secret-tool
+# ...but the scrubber's own docs/tests are engine code, not secrets.
+!docs/specs/secret-scrubber.md
+!**/*secret*-test.mjs
+
+# ── real eval data; fixtures are force-added ─────────────────────────────────
+evals/*.jsonl
+!evals/*.fixture.jsonl
+*.db
+*.db-wal
+*.db-shm
+
+node_modules/
+*.log
+.DS_Store

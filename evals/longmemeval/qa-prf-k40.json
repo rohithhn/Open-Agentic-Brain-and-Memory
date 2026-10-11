@@ -1,0 +1,58 @@
+{
+  "benchmark": "LongMemEval-S (cleaned), end-to-end QA accuracy",
+  "config": {
+    "retrieval": "brain_recall hybrid (BM25 + all-MiniLM-L6-v2, RRF k=60), round units",
+    "k": 40,
+    "reader": "sonnet",
+    "judge": "sonnet",
+    "judgePrompts": "LongMemEval evaluate_qa.py, per type"
+  },
+  "selection": {
+    "stride": 1,
+    "questions": 500,
+    "answered": 500,
+    "missing": 0
+  },
+  "accuracy": 92.8,
+  "accuracyNonAbstention": 93,
+  "abstention": {
+    "n": 30,
+    "accuracy": 90
+  },
+  "taskAveragedAccuracy": 94.7,
+  "byType": {
+    "knowledge-update": {
+      "n": 78,
+      "accuracy": 97.4
+    },
+    "multi-session": {
+      "n": 133,
+      "accuracy": 85
+    },
+    "single-session-assistant": {
+      "n": 56,
+      "accuracy": 98.2
+    },
+    "single-session-preference": {
+      "n": 30,
+      "accuracy": 96.7
+    },
+    "single-session-user": {
+      "n": 70,
+      "accuracy": 100
+    },
+    "temporal-reasoning": {
+      "n": 133,
+      "accuracy": 91
+    }
+  },
+  "evidenceInContext": 99.6,
+  "retrievalLatencyMs": {
+    "p50": 27.4,
+    "p95": 66.9,
+    "max": 381.8
+  },
+  "avgReaderTokens": 31750,
+  "avgHaystackTokensEstimate": 127628,
+  "totalCostUsdEquivalent": 67.48
+}

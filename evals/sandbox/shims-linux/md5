@@ -1,0 +1,4 @@
+#!/bin/sh
+# BSD `md5 -q [file]` for Linux (md5sum prints "<hash>  <name>"). Only the -q form the harness uses.
+[ "${1:-}" = -q ] && shift
+if [ $# -gt 0 ]; then md5sum "$1" | cut -d' ' -f1; else md5sum | cut -d' ' -f1; fi

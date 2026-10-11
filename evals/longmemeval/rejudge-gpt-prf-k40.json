@@ -1,0 +1,49 @@
+{
+  "bench": "longmemeval",
+  "tag": "prf-k40",
+  "judge": {
+    "vendor": "OpenAI via codex exec",
+    "model": "gpt-6-luna",
+    "reasoningEffort": "low"
+  },
+  "answers": 500,
+  "rejudged": 500,
+  "missing": 0,
+  "accuracyClaudeJudge": 92.8,
+  "accuracyGptJudge": 92.2,
+  "agreement": 98.6,
+  "claudeYesGptNo": 5,
+  "claudeNoGptYes": 2,
+  "by_type": {
+    "single-session-user": {
+      "n": 70,
+      "claude": 100,
+      "gpt": 100
+    },
+    "knowledge-update": {
+      "n": 78,
+      "claude": 97.4,
+      "gpt": 97.4
+    },
+    "multi-session": {
+      "n": 133,
+      "claude": 85,
+      "gpt": 84.2
+    },
+    "single-session-preference": {
+      "n": 30,
+      "claude": 96.7,
+      "gpt": 86.7
+    },
+    "temporal-reasoning": {
+      "n": 133,
+      "claude": 91,
+      "gpt": 91.7
+    },
+    "single-session-assistant": {
+      "n": 56,
+      "claude": 98.2,
+      "gpt": 98.2
+    }
+  }
+}

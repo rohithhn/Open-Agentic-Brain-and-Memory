@@ -1,0 +1,39 @@
+{
+  "bench": "locomo",
+  "tag": "main",
+  "judge": {
+    "vendor": "OpenAI via codex exec",
+    "model": "gpt-6-luna",
+    "reasoningEffort": "low"
+  },
+  "answers": 1540,
+  "rejudged": 1540,
+  "missing": 0,
+  "accuracyClaudeJudge": 80.5,
+  "accuracyGptJudge": 83.6,
+  "agreement": 95.4,
+  "claudeYesGptNo": 12,
+  "claudeNoGptYes": 59,
+  "by_category": {
+    "1": {
+      "n": 282,
+      "claude": 59.6,
+      "gpt": 71.6
+    },
+    "2": {
+      "n": 321,
+      "claude": 81.9,
+      "gpt": 82.9
+    },
+    "3": {
+      "n": 96,
+      "claude": 67.7,
+      "gpt": 70.8
+    },
+    "4": {
+      "n": 841,
+      "claude": 88.5,
+      "gpt": 89.3
+    }
+  }
+}

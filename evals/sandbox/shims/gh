@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Fake `gh` for the Agentic Brain sandbox. "GitHub" is $SB_GITHUB/<owner>/<repo>.git
+# (bare repos) plus $SB_GITHUB/<owner>/<repo>.releases/<tag>/<asset>.
+# Never touches the network or the real gh login.
+set -uo pipefail
+: "${SB_GITHUB:?}"; LOGIN="${SB_GH_LOGIN:-sandbox-user}"
+echo "gh $*" >> "${SB_LOG:-/dev/null}"
+[ "${SB_GH_OFFLINE:-}" = 1 ] && { echo "error connecting to api.github.com: dial tcp: lookup api.github.com: no such host" >&2; exit 1; }
+
+slug=""; args=("$@")
+for ((i=0;i<${#args[@]};i++)); do [ "${args[$i]}" = "-R" ] && slug="${args[$((i+1))]}"; done
+bare() { echo "$SB_GITHUB/$1.git"; }
+rel()  { echo "$SB_GITHUB/$1.releases/$2"; }
+
+case "$1 ${2:-}" in
+  "auth setup-git") echo "gh auth setup-git" >> "${SB_LOG:-/dev/null}"; exit 0;;
+  "auth login") exit 1;;
+  "auth status") [ "${SB_GH_NOAUTH:-}" = 1 ] && { echo "You are not logged into any GitHub hosts." >&2; exit 1; }; echo "github.com: Logged in to github.com account $LOGIN (sandbox)"; exit 0;;
+  "api user")
+    if [[ " $* " == *" -i "* ]]; then printf 'HTTP/2.0 200 OK\nX-Oauth-Scopes: repo, read:org\n\n'; fi
+    echo "$LOGIN"; exit 0;;
+  "repo view")
+    s="$3"; [ -d "$(bare "$s")" ] || { echo "GraphQL: Could not resolve to a Repository with the name '$s'. (repository)" >&2; exit 1; }
+    url="https://github.com/$s"
+    if [[ " $* " == *" -q .url"* ]]; then echo "$url"; exit 0; fi
+    if [[ " $* " == *" --json "* ]]; then
+      du=$(git -C "$(bare "$s")" count-objects -v | awk '/size-pack/{print $2}')
+      pub=false; [ -f "$(bare "$s")/PUBLIC" ] && pub=true
+      priv=true; [ "$pub" = true ] && priv=false
+      vis=PRIVATE; [ "$pub" = true ] && vis=PUBLIC
+      echo "{\"name\":\"${s#*/}\",\"isPrivate\":$priv,\"visibility\":\"$vis\",\"url\":\"$url\",\"diskUsage\":${du:-0}}"; exit 0
+    fi
+    echo "$s"; exit 0;;
+  "repo create")
+    s="$3"; [ -d "$(bare "$s")" ] && { echo "GraphQL: Name already exists on this account (createRepository)" >&2; exit 1; }
+    mkdir -p "$(dirname "$(bare "$s")")"; git init -q --bare -b main "$(bare "$s")"
+    [[ " $* " == *" --public "* ]] && touch "$(bare "$s")/PUBLIC"
+    echo "✓ Created repository $s on GitHub (sandbox)"; exit 0;;
+  "repo clone")
+    git clone -q "$(bare "$3")" "$4"; exit $?;;
+  "release view")
+    [ -d "$(bare "$slug")" ] || { echo "GraphQL: Could not resolve to a Repository" >&2; exit 1; }
+    [ -d "$(rel "$slug" "$3")" ] || { echo "release not found" >&2; exit 1; }
+    if [[ " $* " == *" --json "* ]]; then   # `brain audit`: {"assets":[{name,size,updatedAt}]}
+      sep=""; printf '{"assets":['
+      for f in "$(rel "$slug" "$3")"/*; do [ -f "$f" ] || continue
+        printf '%s{"name":"%s","size":%s,"updatedAt":"2026-01-01T00:00:00Z"}' "$sep" "$(basename "$f")" "$(wc -c < "$f" | tr -d ' ')"; sep=","; done
+      echo ']}'; exit 0; fi
+    echo "title: Brain (latest encrypted blob)"; ls "$(rel "$slug" "$3")"; exit 0;;
+  "release create")
+    mkdir -p "$(rel "$slug" "$3")"; exit 0;;
+  "release upload")
+    d="$(rel "$slug" "$3")"; [ -d "$d" ] || { echo "release not found" >&2; exit 1; }
+    cp "$4" "$d/$(basename "$4")"; exit 0;;
+  "release download")
+    d="$(rel "$slug" "$3")"; pat=""; out=""
+    for ((i=0;i<${#args[@]};i++)); do
+      [ "${args[$i]}" = "-p" ] && pat="${args[$((i+1))]}"; [ "${args[$i]}" = "-O" ] && out="${args[$((i+1))]}"; done
+    [ -f "$d/$pat" ] || { echo "release not found" >&2; exit 1; }
+    cp "$d/$pat" "$out"; exit 0;;
+esac
+echo "sandbox gh: unhandled: $*" >&2; exit 97

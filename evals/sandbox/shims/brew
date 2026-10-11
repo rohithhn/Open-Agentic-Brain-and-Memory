@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+echo "brew $*" >> "${SB_LOG:-/dev/null}"; echo "sandbox: brew disabled" >&2; exit 1

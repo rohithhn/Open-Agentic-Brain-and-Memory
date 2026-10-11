@@ -1,0 +1,53 @@
+{
+  "benchmark": "LoCoMo (locomo10), end-to-end QA, LLM-judge accuracy J, categories 1-4",
+  "config": {
+    "retrieval": "brain_recall hybrid (BM25 + all-MiniLM-L6-v2, RRF k=60)",
+    "unit": "round",
+    "k": 20,
+    "reader": "sonnet",
+    "judge": "sonnet",
+    "judgePrompt": "mem0's published LLM-as-a-judge (J) style, CORRECT/WRONG",
+    "categoriesScored": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "category5": "excluded"
+  },
+  "selection": {
+    "stride": 1,
+    "questions": 1540,
+    "answered": 1540,
+    "missing": 0
+  },
+  "J": 80.5,
+  "byCategory": {
+    "1-multi-hop": {
+      "n": 282,
+      "J": 59.6
+    },
+    "2-temporal": {
+      "n": 321,
+      "J": 81.9
+    },
+    "3-open-domain": {
+      "n": 96,
+      "J": 67.7
+    },
+    "4-single-hop": {
+      "n": 841,
+      "J": 88.5
+    }
+  },
+  "categoryAveragedJ": 74.4,
+  "evidenceInContext": 68.4,
+  "retrievalLatencyMs": {
+    "p50": 5,
+    "p95": 10.4,
+    "max": 227.1
+  },
+  "avgReaderTokens": 3588,
+  "avgFullConversationTokensEstimate": 26023,
+  "totalCostUsdEquivalent": 32.46
+}

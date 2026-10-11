@@ -1,0 +1,11 @@
+#!/bin/sh
+# Pin the system git so a half-installed Homebrew git on the host cannot break the
+# sandbox. A plain wrapper, not a symlink: the engine export refuses symlinks.
+# Falls back to the next git on PATH (after this shims dir) where /usr/bin/git is absent.
+[ -x /usr/bin/git ] && exec /usr/bin/git "$@"
+self_dir=$(cd "$(dirname "$0")" && pwd -P)
+IFS=:; for d in $PATH; do
+  [ "$(cd "$d" 2>/dev/null && pwd -P)" = "$self_dir" ] && continue
+  [ -x "$d/git" ] && exec "$d/git" "$@"
+done
+echo "git: not found" >&2; exit 127
