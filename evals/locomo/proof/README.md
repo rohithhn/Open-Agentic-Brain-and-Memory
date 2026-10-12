@@ -1,7 +1,7 @@
 # Per-question proof
 
 Every answer and every grading verdict behind the numbers in `../*.json`, one JSON object per
-question, gzip-compressed (`gunzip -c qa-deep-k40.jsonl.gz | head`).
+question, gzip-compressed (`gunzip -c qa-luna-deep-k40.jsonl.gz | head`).
 
 - `qa-<run>.jsonl.gz` — the run's answers: question id, type/category, the reader's answer, the gold
   answer, the Claude judge's verdict (`correct`), whether the evidence was retrieved, retrieval time.

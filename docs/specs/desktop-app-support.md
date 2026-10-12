@@ -1,3 +1,5 @@
+> Historical design note. It explains why the code is shaped the way it is; details may be out of date — the code and README are authoritative.
+
 # Spec — Claude Desktop, ChatGPT Desktop & Codex Desktop support
 
 Status: **Proposed** · Date: 2026-08-05 · Scope: extend Agentic Brain's capture/recall loops to the

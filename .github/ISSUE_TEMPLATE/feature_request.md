@@ -14,7 +14,3 @@ Describe the situation, not just the feature — what were you doing when you wa
 ## Alternatives you've considered
 
 ## Anything else
-
-Note: this project currently has no settled license (see `CONTRIBUTING.md`), so code
-contributions can't be merged yet — but feature ideas and design feedback are welcome and
-useful regardless.

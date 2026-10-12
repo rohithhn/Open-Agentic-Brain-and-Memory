@@ -1,238 +1,142 @@
-# Agentic Brain — private beta
+# Getting started, backup & uninstall
 
-You have been invited to try Agentic Brain. This is a private beta: the repo has no public
-listing, testers are added one at a time, and there is exactly one prior production user (the
-author). This document is everything you need to go from nothing to a working brain, and back
-out again if it's not for you.
-
-## What this is, in three sentences
-
-Agentic Brain captures what your AI coding sessions (Claude Code, Codex, Cursor, and others)
-actually establish, distills it into a searchable memory, and injects the relevant parts back
-into every tool you use. The memory lives as an `age`-encrypted blob in a **GitHub Release
-asset on your own private repo** — not on a vendor server — and the decryption key never
-leaves your Mac's Keychain. Nothing about this system requires trusting the author with your
-data; it requires trusting `age` encryption and your own GitHub account.
+Agentic Brain is open source (Apache-2.0). This page covers the practical bits the README
+skims: what you need, how to protect your key, how to report a problem, and how to remove
+everything again. The README is the authoritative overview.
 
 ## Prerequisites
 
-- **macOS.** This is the only supported platform right now — the Keychain and `launchd`
-  integrations it depends on are Mac-specific.
-- **Node ≥ 22.** The engine uses `node:sqlite`, which only exists from Node 22 onward. Check
-  with `node --version`; install/upgrade with `brew install node` or `nvm install 22`.
-- **`gh` (GitHub CLI), authenticated.** Run `gh auth login` before anything else. `brain init`
-  needs a token with the `repo` scope to create your private data repo and upload Release
-  assets.
-- A GitHub account you're willing to host a private repo on. `brain init` creates it for you —
-  you do not create anything by hand.
+- **macOS or Linux.** Windows is not supported.
+- **Node 22 or newer** (`node:sqlite` needs it). Check with `node --version`.
+- **`git` and a GitHub account.** The installer fetches `age`, `tar` and `gh` if they are
+  missing. `brain init` uses `gh` to create your private data repo, so run `gh auth login` first.
+- **Linux only:** install `libsecret-tools` (Debian/Ubuntu) or `libsecret` (Fedora) and have a
+  keyring running (GNOME Keyring or KWallet). See "Where the key lives" below.
 
-## Install and initialize
+## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/<owner>/agentic-brain/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rohithhn/Ultra-Agentic-Memory-and-Brain-Public/main/install.sh | bash
 ```
 
-On a machine with no existing brain, this clones the engine (this code — read-only for you;
-updates flow in via `git pull`, never push) and then runs `brain init`, which:
+With no existing brain, the installer clones this engine and runs `brain init`: it generates
+your `age` key, creates a **private** GitHub repo under your account (default name
+`claude-brain`) for your data, and runs the first sync. If you already have a brain on another
+machine, it switches to RESTORE mode: it clones your data repo, asks for your key, and decrypts
+your memory.
 
-1. Generates your `age` encryption key and stores it in the macOS Keychain (never overwrites an
-   existing one).
-2. Creates a **private** GitHub repo under your account (default name `claude-brain`) to hold
-   your data.
-3. Runs the first sync — commits the (currently empty) tree and uploads the encrypted blob as a
-   `brain-latest` Release asset.
-
-If you already have a brain on another machine, the installer detects that and switches to
-RESTORE mode instead: it clones your existing data repo, opens a local page for you to paste
-your key, then downloads and decrypts your existing memory.
-
-## Wiring your tools
+Then wire your tools and check the result:
 
 ```bash
-node bin/brain.mjs onboard
+node bin/brain.mjs onboard   # safe to re-run, e.g. after installing a new tool
+node bin/brain.mjs doctor    # read-only: PASS/WARN/FAIL per tool, with a fix for each FAIL
 ```
 
-This is what connects the brain to whatever AI tools you actually have installed — Claude
-Code, Codex CLI/desktop, Antigravity CLI, Kilo Code, Cursor, Claude Desktop, ChatGPT desktop.
-It is additive and safe to re-run any time (e.g. after installing a new tool): it only ever
-adds a `claude-mem` MCP entry to each tool's config and never touches other servers you already
-have configured. It prints a per-tool report of what got wired and what was skipped (not
-installed).
+`onboard` adds one MCP server entry named `agentic-brain` to each tool it finds and never
+touches other servers in those configs. Supported: Claude Code, Claude Desktop, Codex (CLI and
+desktop), Cursor, Antigravity CLI and Kilo Code (beta). See the README's support matrix for
+what capture, push and pull mean for each tool.
 
-**Honest support matrix — read this before assuming a tool "just works":**
+A new brain starts empty unless you chose to include the sessions already on your computer.
+Give it a day of normal use, then try `brain dream` and `brain eval`.
 
-| Tool | Capture (sessions feed the brain) | Push (always-on, zero action) | Pull (model can search, on demand) |
-|---|---|---|---|
-| Claude Code | yes | yes — `CLAUDE.md` | yes |
-| Codex CLI | yes | yes — `AGENTS.md` | yes |
-| Codex desktop app | yes | yes | yes |
-| Antigravity CLI | yes | yes — `GEMINI.md` | yes |
-| Kilo Code (beta) | yes | yes — `~/.config/kilo/AGENTS.md` | yes |
-| Cursor | yes | per-repo only, not global | yes |
-| Claude Desktop | **no — server-side history, nothing local to read** | no | yes |
-| ChatGPT desktop | **no — local history is encrypted, not readable without defeating another vendor's protection** | no | yes |
+## Where the key lives, and how to back it up
 
-Claude Desktop and ChatGPT desktop are **pull-only, permanently** — not "not yet." There is no
-capture channel to build for either, by design of those apps, not by a gap in this project.
-Cursor's push is per-repo because Cursor's own Rules-for-AI live in an internal database this
-project deliberately does not touch.
+The `age` private key is the only thing that can decrypt your memory. Lose it and the
+encrypted copy on GitHub is **permanently unreadable**. There is no reset, and nobody else
+holds a copy.
 
-## Verify
+- **macOS:** the Keychain (service `claude-brain`).
+- **Linux:** your keyring via libsecret, when `secret-tool` is installed and a keyring answers.
+  Otherwise it falls back to an encrypted file, `~/.claude-brain/secrets.enc`, whose key is
+  derived from this machine's machine-id (or hostname), your uid and your username. That only
+  protects against the file being casually copied elsewhere; anyone who can read your files
+  on this machine can decrypt it. Use a keyring.
+
+Back the key up as soon as you are set up:
 
 ```bash
-node bin/brain.mjs doctor
+node bin/brain.mjs key backup    # key → memory/key-recovery.age in your private data repo,
+                                 # encrypted with a passphrase you choose (asked hidden)
 ```
 
-This is the diagnostic. It is read-only — it never fixes anything, only reports — and for each
-tool it checks capture, push, and pull, printing PASS/WARN/FAIL/N-A with a fix command next to
-every FAIL. Run it right after onboarding, and run it again any time something seems off.
-
-**When filing a bug, paste the full `brain doctor` output.** It is the fastest way for a
-one-person team to diagnose a problem it can't reproduce locally.
-
-## Day one: an empty brain is empty
-
-Nothing is pre-loaded. If you just ran `init`, your memory has zero observations, and that is
-correct, not broken:
-
-- `brain dream` (builds the wiki) and `brain distill` (drafts reusable learnings) have nothing
-  to work with yet — they'll print a short "nothing to do yet" message and exit cleanly rather
-  than error.
-- Injection into `CLAUDE.md`/`AGENTS.md`/`GEMINI.md` writes **nothing** into those files while
-  your brain is empty — you will not see a "0 observations" banner cluttering every tool you
-  open.
-- The moment you use Claude Code, Codex, or another wired tool for a real session, that session
-  is captured automatically. Give it a day or two of normal use, then run `brain dream` and
-  `brain eval` to see the wiki and retrieval scoring come alive.
-
-## The key-loss warning (read this twice)
-
-**The `age` key is the only thing that can decrypt your memory, and it is unrecoverable if
-lost.** It lives only in your Mac's Keychain — it is never written to disk in plaintext, never
-committed to your repo, and the author has no copy and no way to recover it for you.
-
-If you lose the key (wiped Mac, deleted Keychain entry, no backup) before copying it
-elsewhere, **the encrypted blob in your GitHub repo becomes permanently unreadable.** Not
-"hard to recover" — permanently. There is no reset-password flow, no vendor support ticket,
-no backdoor.
-
-Before you rely on this for anything you care about:
-
-- Run `node bin/brain.mjs key show` and store the printed key somewhere safe outside this Mac
-  (a password manager is a reasonable place) — this is the only backup that exists.
-- If you set up a second machine, use that saved key with the RESTORE flow, or run
-  `brain key import AGE-SECRET-KEY-...` there.
-- Again: **the `age` key is the whole security boundary and the whole recovery story.** Losing
-  it is losing the data. Leaking it is losing the confidentiality. Treat it like a password
-  manager master password, because functionally it is one.
+On a new machine, `brain key recover` (or the RESTORE flow) asks for that passphrase.
+Remember it: without it the file is useless. If you also want an offline copy,
+`brain key reveal` prints the private key to your terminal only (after a typed confirmation)
+so you can store it in a password manager. `brain key show` prints only the **public** key;
+it is not a backup.
 
 ## Reporting bugs
 
-1. Run `node bin/brain.mjs doctor` and copy the full output.
-2. Note your macOS version, `node --version`, and which AI tools you have installed
-   (Claude Code / Codex / Cursor / Antigravity / Kilo Code / Claude Desktop / ChatGPT
-   desktop — whichever apply).
-3. Open an issue using the bug report template, or send it directly to whoever invited you to
-   the beta. Do not paste your `age` key, GitHub token, or raw `brain doctor` output if it
-   happens to contain observation text you don't want shared — redact first if unsure.
+Open an issue with the bug report template. Include the full `brain doctor` output, your OS
+(macOS version or Linux distro), `node --version`, and which AI tools you use. Never paste
+your `age` key or a GitHub token, and redact any memory text you don't want public. For
+security problems, follow `SECURITY.md` instead.
 
-## What will probably break
+## Uninstall
 
-This is one person's tool with one prior production user. Be ready for:
+Everything below is on your own machine except the last step.
 
-- **Retrieval misses on paraphrased questions without the on-device model.** Search is hybrid
-  (keywords + meaning) when the optional embedding model is installed; without it, it is keyword
-  only, and a question that shares no words with the memory may not surface it.
-- **Multi-machine sync is whole-blob and merge-based, not real-time.** Editing memory on two
-  machines at once needs `brain merge` to reconcile; it will not resolve live conflicts for
-  you.
-- **New or unusual tool versions can break parsers.** Session-file formats for Codex/Kilo/
-  Antigravity/Cursor were reverse-engineered from what those tools wrote at the time; a tool
-  update can change that format out from under the parser. `brain doctor`'s capture check is
-  your early warning.
-- **The secret scrubber is best-effort, not a guarantee** — see `SECURITY.md`. Do not treat an
-  unflagged observation as proof it's clean.
-- **Sharp edges in error messages.** You may see a raw stack trace instead of a friendly
-  message in some code paths that haven't been beta-hardened yet. If you hit one, that's useful
-  bug-report material, not a sign you did something wrong.
-
-## Uninstalling — leaving cleanly
-
-A beta tester should be able to walk away and leave nothing behind. Here is everything this
-tool writes on your machine and how to remove each piece.
-
-**1. Stop and remove the background services (`launchd` agents):**
+**1. Stop the background jobs.**
 
 ```bash
-for label in com.claudebrain.serve com.claudebrain.ingest com.claudebrain.watch-agy com.claudebrain.watch-codex; do
-  launchctl unload "$HOME/Library/LaunchAgents/$label.plist" 2>/dev/null
-  rm -f "$HOME/Library/LaunchAgents/$label.plist"
-done
+node bin/brain.mjs serve --uninstall
+node bin/brain.mjs ingest --uninstall
+node bin/brain.mjs watch-agy --uninstall
+node bin/brain.mjs watch-codex --uninstall
+node bin/brain.mjs distill-sessions --uninstall
+node bin/brain.mjs embed --uninstall
 ```
 
-**2. Remove the stable bridge home:**
+These stop the jobs but leave their definition files. Delete those too, along with the daily
+sync job, which has no uninstall command:
+
+- **macOS:** in `~/Library/LaunchAgents/`, the six `com.claudebrain.*.plist` files (serve,
+  ingest, watch-agy, watch-codex, distill, embed) and `com.<owner>.<repo>.sync.plist` (run
+  `launchctl unload <file>` on the sync one first).
+- **Linux:** the matching `.service` and `.timer` files in `~/.config/systemd/user/` (run
+  `systemctl --user disable --now <name>.timer` for the sync one first), then
+  `systemctl --user daemon-reload`.
+
+**2. Remove the `agentic-brain` MCP entries** from each tool you wired. Remove only that key;
+each file also has timestamped `.bak.*` copies from when it was wired.
+
+- Claude Code: `~/.claude.json` → `mcpServers.agentic-brain` (and the same in
+  `~/.claude-work/.claude.json` or `~/.claude-personal/.claude.json` if you have them)
+- Codex and ChatGPT desktop: `~/.codex/config.toml` → `[mcp_servers.agentic-brain]`
+- Antigravity CLI: `~/.gemini/config/mcp_config.json` → `mcpServers.agentic-brain`
+- Cursor: `~/.cursor/mcp.json` → `mcpServers.agentic-brain`
+- Kilo Code: `~/.config/kilo/kilo.jsonc` (or `kilo.json`) → `mcp.agentic-brain`
+- Claude Desktop: `claude_desktop_config.json` (macOS: `~/Library/Application Support/Claude/`,
+  Linux: `~/.config/Claude/`) → `mcpServers.agentic-brain`
+
+Also remove the `SessionStart` hook that runs `session-start-context.sh` from
+`~/.claude/settings.json` (and any other Claude profile's `settings.json`).
+
+**3. Remove the managed context blocks.** In `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`,
+`~/.gemini/GEMINI.md` and `~/.config/kilo/AGENTS.md`, delete everything from the
+`<!-- BRAIN:START ... -->` line to the `<!-- BRAIN:END -->` line. This tool never writes
+anything outside those markers.
+
+**4. Remove local data.**
 
 ```bash
-rm -rf "$HOME/.agentic-brain"
+rm -rf ~/.agentic-brain     # MCP bridge home
+rm -rf ~/.claude-brain      # local store (brain.db), logs, Linux fallback secrets file
 ```
 
-**3. Remove the `claude-mem` MCP entries from each tool you wired.** `brain onboard` only ever
-adds one entry (keyed `claude-mem`) to each config below — it never touches anything else in
-these files, so removing just that key is safe:
+Then delete the folder the installer cloned into (the installer prints it; `CLAUDE_BRAIN_DIR`
+overrides it).
 
-- `~/.claude/.mcp.json`, `~/.claude-work/.mcp.json`, `~/.claude-personal/.mcp.json` (whichever
-  profiles you have) — remove the `mcpServers.claude-mem` entry.
-- `~/.codex/config.toml` — remove the `[mcp_servers.claude-mem]` block.
-- `~/.gemini/config/mcp_config.json` and `~/.gemini/settings.json` — remove the `claude-mem`
-  key under `mcpServers`.
-- `~/.cursor/mcp.json` — remove the `claude-mem` key under `mcpServers`.
-- `~/Library/Application Support/Claude/claude_desktop_config.json` — remove the `claude-mem`
-  key under `mcpServers`.
-
-Each of these files also has recent timestamped `.bak.*` copies next to it from the last time
-it was wired, if you'd rather diff and restore by hand than edit live.
-
-**4. Remove the managed context blocks.** Each pushed file has your normal content untouched,
-plus one delimited block:
-
-```
-<!-- BRAIN:START (auto-generated by claude-brain — ...) -->
-...
-<!-- BRAIN:END -->
-```
-
-Open `~/.claude/CLAUDE.md` (and any other profile's `CLAUDE.md`), `~/.codex/AGENTS.md`, and
-`~/.gemini/GEMINI.md`, and delete everything between (and including) those two marker lines.
-Everything outside the markers is yours and is never touched by this tool.
-
-**5. Remove the local data directories:**
+**5. Remove the key: last, and only if you never want the data back.**
 
 ```bash
-rm -rf "$HOME/.agentic-brain"        # if step 2 was skipped
-rm -rf ~/Documents/Brain-claude-mem  # or wherever you cloned the engine — this repo itself
-```
-
-Note: your captured session memory lives in claude-mem's own database
-(`~/.claude-mem/claude-mem.db`), which this project reads but does not own. If you also want to
-remove claude-mem's data, that is a separate tool with its own uninstall — this beta doesn't
-touch that decision for you.
-
-**6. Remove the Keychain entry (your encryption key):**
-
-```bash
+# macOS
 security delete-generic-password -s claude-brain -a age-identity
 security delete-generic-password -s claude-brain -a age-recipient
+# Linux (libsecret)
+secret-tool clear service claude-brain account age-identity
+secret-tool clear service claude-brain account age-recipient
 ```
 
-Do this **last**, and only once you're sure you don't want the data back — after this, the
-Release asset in your GitHub repo is unreadable by anyone, including you (see the key-loss
-warning above; this is that warning, deliberately invoked).
-
-**7. Delete (or keep) your private data repo.** Your memory lives in the private GitHub repo
-`brain init` created for you (default `<you>/claude-brain`). It is entirely yours — delete it
-from GitHub's repo settings if you want it gone, or leave it private and untouched if you might
-come back.
-
-That's the full footprint: four LaunchAgents, one directory (`~/.agentic-brain`), MCP entries
-in whichever tool configs you had, managed blocks in up to three instructions files, two
-Keychain entries, and one GitHub repo that is entirely under your own control throughout.
+**6. Delete (or keep) your private data repo** on GitHub. It is entirely yours.

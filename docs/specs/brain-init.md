@@ -1,6 +1,8 @@
+> Historical design note. It explains why the code is shaped the way it is; details may be out of date — the code and README are authoritative.
+
 # Spec — `brain init` (fresh-brain onboarding)
 
-Status: **Ready to implement** · Date: 2026-08-04 · Task: LAUNCH_PLAN A3 (Opus spec → Sonnet build)
+Status: **Ready to implement** · Date: 2026-08-04
 Consistent with ADR-001 (two-repo split). **Implementer: change no behaviour not described here.**
 
 Goal: a stranger with a clean Mac and `gh auth login` reaches a working, syncing, encrypted brain in
@@ -29,14 +31,14 @@ slug unresolvable on a machine that has no `config.json`.
   parent/child). A sibling scan (`pgrep -P $PPID`) did not even find curl — it had already exited. macOS has
   no `/proc`. Any recovery would be a race-prone argv scrape in the first ten seconds of a stranger's
   experience. **Rejected on evidence, not taste.**
-- **(2) personal default in the private repo only** — rejected: creates a permanent divergence in a file
+- **(2) a personal default kept out of the published engine only** — rejected: creates a permanent divergence in a file
   ADR-001 §2 lists as *mirrored byte-identical*, and the flip-day literal has to be edited anyway.
 - **(1) `brain init` owns fresh installs — CHOSEN**, with one addition that makes the one-liner work again:
   `install.sh` carries `ENGINE_REPO_DEFAULT="OWNER/agentic-brain"` as a **placeholder literal**.
-  Pre-flip this is harmless because `raw.githubusercontent.com` 404s on a private repo — the one-liner
-  *cannot* work before flip day regardless. Post-flip it is the real slug and contains no personal data.
-  Add to the Go-Public Checklist (between steps 3 and 4): **"set `ENGINE_REPO_DEFAULT` and the README
-  one-liner URL to the now-public slug."** Private-phase testing uses `AGENTIC_BRAIN_REPO=…`.
+  Before the engine repo was public this was harmless because `raw.githubusercontent.com` 404s on a
+  private repo — the one-liner *cannot* work until then regardless. Once public, `ENGINE_REPO_DEFAULT` and
+  the README one-liner are set to the real slug, which contains no personal data. Testing before that
+  uses `AGENTIC_BRAIN_REPO=…`.
 
 `BRAIN_REPO` is never required from a fresh user — `brain init` creates the repo and writes the slug.
 
@@ -177,14 +179,14 @@ not red errors. Existing muted placeholders elsewhere ("No memory yet.", "none y
 
 ## 6. Acceptance test — clean temp `$HOME`, throwaway private repo
 
-Same method as ROADMAP Phase 0.2 (temp `$HOME` + isolated keychain). **Isolation is the whole test; get it
+Method: temp `$HOME` + isolated keychain. **Isolation is the whole test; get it
 exactly right.** Save as `docs/specs/brain-init-acceptance.sh`, run manually — never in CI, never from launchd.
 
 ```bash
 set -euo pipefail
 export BRAIN_TEST_ROOT=$(mktemp -d /tmp/brain-init-XXXX)
 export HOME="$BRAIN_TEST_ROOT/home"                 # os.homedir() honours $HOME → isolates ~/.claude-mem
-export CLAUDE_BRAIN_DIR="$HOME/Documents/Brain-claude-mem"
+export CLAUDE_BRAIN_DIR="$HOME/agentic-brain"
 export BRAIN_NO_AUTOMATION=1                        # ← no launchd jobs, ever
 export AGENTIC_BRAIN_REPO="<owner>/agentic-brain"
 export TEST_REPO="brain-init-test-$(date +%s)"      # unique ⇒ never collides with claude-brain
@@ -230,4 +232,4 @@ Teardown (always, `trap`): `gh repo delete <owner>/$TEST_REPO --yes` · `securit
 $HOME/Library/Keychains/login.keychain-db` · `rm -rf $BRAIN_TEST_ROOT` · re-assert invariants 2–4 · confirm
 the real `~/.claude-mem/claude-mem.db` mtime and row count are unchanged.
 
-**Pass = all 7 steps green with all 4 invariants intact.** Record the evidence in `plan.md`, Phase-0.2 style.
+**Pass = all 7 steps green with all 4 invariants intact.**

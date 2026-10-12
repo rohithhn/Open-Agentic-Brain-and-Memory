@@ -63,7 +63,8 @@ different machine.
 
 ## Phrasing that survives retrieval
 
-Future recall is keyword-driven, so write for the search that will find this later:
+Future recall is a hybrid of keyword and meaning search, and exact terms still matter most, so
+write for the search that will find this later:
 
 - **Name the concrete things.** Include the file path, the table, the column, the library,
   the error message. "We had encoding problems" retrieves nothing; `UnicodeDecodeError`

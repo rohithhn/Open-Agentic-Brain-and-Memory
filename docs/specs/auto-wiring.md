@@ -1,3 +1,5 @@
+> Historical design note. It explains why the code is shaped the way it is; details may be out of date — the code and README are authoritative.
+
 # Spec — Auto-wiring: every AI tool wired to the brain by one command
 
 Status: **Ready to implement** · Date: 2026-08-06 · Supersedes: `desktop-app-support.md` §0/§3.2 (ChatGPT rows only)
@@ -34,7 +36,7 @@ Two mechanisms, one registry, one indirection:
 
 ## 2. The absolute-path problem — stable shim, decided
 
-Today every MCP entry embeds `~/Documents/Brain-claude-mem/bin/mcp-bridge.cjs`. For a public
+Today every MCP entry embeds the absolute path of one clone (`<clone>/bin/mcp-bridge.cjs`). For a public
 repo the path must resolve from the user's clone at wire time — and survive the repo moving later.
 
 **Decision: a two-file stable home at `~/.agentic-brain/`, written/refreshed by `brain onboard`:**
@@ -183,21 +185,16 @@ Pre-existing bugs T1 must fix (both verified in `bin/lib/wire.mjs` today): (a) `
 regex corrupts the file when block content changes; (b) `wireJson` clobbers the whole config on malformed
 JSON. Ship no new target until both are dead.
 
-| # | Task | Model | Owns (exclusive) | Depends on |
-|---|---|---|---|---|
-| T1 | `wire.mjs` v2 core: registry consumption, hardened `wireJson` (malformed⇒refuse), rewritten line-based `wireToml`, backup+prune policy, semantic already-wired compare, node-path resolution | **OPUS** — one bad merge destroys a user's 11-server config; TOML extent semantics are exactly the subtle irreversible part | `bin/lib/wire.mjs` | — |
-| T2 | Stable shim: `bin/templates/bridge-shim.cjs` + install/refresh of `~/.agentic-brain/{engine-path,bridge.cjs}` | **OPUS** — path-resolution design; every tool's pull rides on it | `bin/lib/bridgehome.mjs`, `bin/templates/bridge-shim.cjs` | — |
-| T3 | `brain init` + install.sh INIT/RESTORE split + `loadConfig()` fallback (build brain-init.md as written) | **OPUS** — key/repo destructive edges (brain-init §3–4) | `bin/lib/init.mjs`, `install.sh`, `bin/lib/paths.mjs` | — |
-| T4 | Registry data: all six target rows incl. Claude Desktop / Cursor / Gemini CLI | **SONNET** — data rows following T1's established pattern | `bin/lib/wire-targets.mjs` (new, data-only) | T1, T2 |
-| T5 | `brain doctor` per §6 (incl. stdio spawn probe) | **SONNET** — mechanical checks with crisp pass/fail definitions | `bin/lib/doctor.mjs` (new) | T2, T4 |
-| T6 | `onboard` v2 report table + `doctor`/`init` CLI cases; install.sh already patched by T3 | **SONNET** — glue over finished parts; sole owner of `brain.mjs` edits (T3's CLI case lands here too, from T3's exported function) | `bin/brain.mjs` | T1–T5 |
-| T7 | README capability matrix (§7) + dated correction note in `desktop-app-support.md` (§0) | **SONNET** — transcription of this spec | `README.md`, `docs/specs/desktop-app-support.md` | none (content), publish after T6 |
-| T8 | Acceptance: temp-`$HOME` harness — seed fake configs (11-server Claude Desktop clone, commented TOML, malformed JSON), run onboard twice (second run: zero writes), assert preservation byte-ranges, run doctor | **SONNET** — verifiable assertions; reuses brain-init §6 isolation invariants | `docs/specs/auto-wiring-acceptance.sh` (new) | T1–T6 |
-
-**Parallelism (no shared files):** wave 1 = T1 ∥ T2 ∥ T3 (disjoint files; T3 must not touch `wire.mjs`,
-T1 must not touch `install.sh`/`paths.mjs`). Wave 2 = T4 ∥ T5 ∥ T7-content. Wave 3 = T6, then T8.
-`brain.mjs` has exactly one owner (T6) — T3 and T5 export functions and never edit it; this is the rule
-that prevents the parallel-edit collisions this project has already hit.
+| # | Task | Owns (exclusive) | Depends on |
+|---|---|---|---|
+| T1 | `wire.mjs` v2 core: registry consumption, hardened `wireJson` (malformed⇒refuse), rewritten line-based `wireToml`, backup+prune policy, semantic already-wired compare, node-path resolution | `bin/lib/wire.mjs` | — |
+| T2 | Stable shim: `bin/templates/bridge-shim.cjs` + install/refresh of `~/.agentic-brain/{engine-path,bridge.cjs}` | `bin/lib/bridgehome.mjs`, `bin/templates/bridge-shim.cjs` | — |
+| T3 | `brain init` + install.sh INIT/RESTORE split + `loadConfig()` fallback (build brain-init.md as written) | `bin/lib/init.mjs`, `install.sh`, `bin/lib/paths.mjs` | — |
+| T4 | Registry data: all six target rows incl. Claude Desktop / Cursor / Gemini CLI | `bin/lib/wire-targets.mjs` (new, data-only) | T1, T2 |
+| T5 | `brain doctor` per §6 (incl. stdio spawn probe) | `bin/lib/doctor.mjs` (new) | T2, T4 |
+| T6 | `onboard` v2 report table + `doctor`/`init` CLI cases; install.sh already patched by T3 | `bin/brain.mjs` | T1–T5 |
+| T7 | README capability matrix (§7) + dated correction note in `desktop-app-support.md` (§0) | `README.md`, `docs/specs/desktop-app-support.md` | none (content), publish after T6 |
+| T8 | Acceptance: temp-`$HOME` harness — seed fake configs (11-server Claude Desktop clone, commented TOML, malformed JSON), run onboard twice (second run: zero writes), assert preservation byte-ranges, run doctor | `docs/specs/auto-wiring-acceptance.sh` (new) | T1–T6 |
 
 **Definition of done:** fresh temp-HOME run of `install.sh` (INIT mode) ends with `brain doctor` exit 0,
 §4's table showing every detected tool wired, and a second `brain onboard` performing zero writes.

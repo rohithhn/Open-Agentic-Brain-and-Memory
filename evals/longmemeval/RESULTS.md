@@ -34,7 +34,7 @@
 > *The main run stored only the last 600 chars of each answer; the GPT judge therefore missed the
 > personalisation at the start of preference answers (46.7 vs 96.7). Later runs store full answers.
 
-_Run 2026-10-01 on branch `overnight-roadmap`, after the `brain_context` query fix (see "Before / after"). Full set, no subset. Numbers are copied from
+_Run 2026-10-01, after the `brain_context` query fix (see "Before / after"). Full set, no subset. Numbers are copied from
 [`results.json`](results.json), which the harness writes; a second run from the embedding cache gave
 byte-identical results. The full run was repeated after the `brain_context` BM25 depth was corrected
 from 60 to the product's 50: only the round-unit `brain_context` hybrid numbers changed (overall by at

@@ -477,9 +477,6 @@ Commands:
                         one-command move from claude-mem: plan (default) → import + verify →
                         wire the brain into every tool → keep claude-mem capturing but mute
                         its startup context dump (backed up; --undo puts it back)
-  engine-diff [--orphans]   what would change in the engine repo (review gate)
-  engine-export [--apply] [--to <dir>]   mirror allowlisted files -> engine repo (dry-run default)
-  engine-import [--apply]   pull engine-repo changes back (refuses on a dirty tree)
   key <sub>             manage the age encryption key (generate|import|show|rotate|reveal)
   key backup            store the key in the brain repo, encrypted with a recovery passphrase
   key recover           new Mac: unlock the key from that file with the passphrase (hidden prompt)
@@ -1362,7 +1359,8 @@ async function main() {
       process.exitCode = r.ok ? 0 : 1;
       break;
     }
-    // Mirror allowlisted engine code into the sibling engine repo. Dry-run is the
+    // Mirror allowlisted engine code into the sibling engine repo. Maintainer-only:
+    // deliberately left out of the help listing, but still works. Dry-run is the
     // default everywhere (same convention as `scrub`); --apply is required to write.
     // Creating the GitHub repo, adding a remote, pushing and flipping visibility
     // are deliberately NOT here — those stay owner-only, by hand.
@@ -1476,7 +1474,7 @@ async function main() {
       break;
     }
     default:
-      console.log('usage: brain <init|sync|restore|merge|export|status|doctor|audit|key|serve|onboard|skills|distill|distill-sessions|eval|workflows|ingest|scrub|clean|recapture|lifecycle|status-mark|migrate-hash|import-claude-mem|switch-from-claude-mem|engine-export|engine-diff|engine-import|mcp-server|recall|remember>');
+      console.log('usage: brain <init|sync|restore|merge|export|status|doctor|audit|key|serve|onboard|skills|distill|distill-sessions|eval|workflows|ingest|scrub|clean|recapture|lifecycle|status-mark|migrate-hash|import-claude-mem|switch-from-claude-mem|mcp-server|recall|remember>');
   }
 }
 

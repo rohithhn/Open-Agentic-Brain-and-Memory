@@ -29,17 +29,16 @@ If you cannot agree to the second point, say so in your pull request before it i
 
 - **File issues.** Bug reports, questions, and design feedback are useful and welcome even
   without a contribution path for code. Use the bug report or feature request templates.
-- **Testing counts.** This is a private beta with limited real-world usage. Trying it, running
-  `brain doctor`, and reporting what breaks (see `BETA.md`) is a genuinely valuable contribution
-  right now.
+- **Testing counts.** The project has limited real-world usage so far. Trying it, running
+  `brain doctor`, and reporting what breaks (see `BETA.md`) is a genuinely valuable contribution.
 
 ## Project shape, for context
 
 If you're exploring the code: `bin/brain.mjs` is the CLI entry point, `bin/lib/*.mjs` holds the
 engine modules (one concern per file — `wire.mjs` for MCP wiring, `inject.mjs` for context
 injection, `dream.mjs` for the wiki, `scrub.mjs` for the secret scrubber, etc.), `evals/*.mjs`
-are the test suites (run individually with `node evals/<name>-test.mjs`, no test runner or
-dependencies required), and `docs/specs/` holds the design specs each subsystem was built
+are the test suites (run them all with `npm test`, or one with `node evals/<name>-test.mjs`;
+no required dependencies), and `docs/specs/` holds the design specs each subsystem was built
 against. `ui/` is the localhost control panel (`server.mjs` + static `app.js`/`index.html`).
 
 ## Questions

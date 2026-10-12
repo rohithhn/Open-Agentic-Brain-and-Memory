@@ -291,7 +291,7 @@ difference here is architectural, not qualitative:
 | Encryption key custody | Vendor-managed | Your OS Keychain; never transmitted |
 | Cost model | Per-seat subscription | Free; you pay GitHub nothing extra for a private repo |
 | If the vendor shuts down | Export if they offer one | Nothing happens |
-| Retrieval | Server-side semantic search | Local hybrid search (keywords + meaning, optional deep rerank): **94.2% on LongMemEval**, 5–25 ms, nothing leaves your machine |
+| Retrieval | Server-side semantic search | Local hybrid search (keywords + meaning) in milliseconds; **94.2% on LongMemEval-S** with opt-in deep recall (median ~2.4 s per query, see [RESULTS](./evals/longmemeval/RESULTS.md)); nothing leaves your machine |
 | Sync | Continuous, but every change passes through the vendor's servers | **Instant and incremental on your machine.** Across machines: automatic daily sync of one encrypted file, merged memory by memory. GitHub only ever sees ciphertext; never what changed or when |
 | Setup | Sign up, install extension | Install a CLI, hold a key, manage a repo |
 | Uptime guarantee | Theirs | None. It's your machine. |
@@ -302,8 +302,8 @@ and no bill, and you take on a little setup.
 **On retrieval specifically:** search is local and hybrid: SQLite keyword ranking fused with a
 small on-device embedding model (optional, ~23 MB), plus pseudo-relevance feedback and an
 opt-in deep rerank for questions whose answer is spread over many memories. End-to-end
-answer accuracy on LongMemEval-S is **94.2%** (93.4% with a GPT judge), in the same range as
-the leading hosted memory products, with no server and zero runtime dependencies. Method,
+answer accuracy on LongMemEval-S is **94.2%** (93.4% with a GPT judge) with deep recall on,
+with no server and no required runtime dependencies. Method,
 code and every answer are in [`evals/`](./evals/longmemeval/RESULTS.md).
 
 ---

@@ -16,14 +16,14 @@ paste output here
 
 ## Environment
 
-- macOS version:
+- OS (macOS version, or Linux distro and version):
 - `node --version`:
 - AI tools installed (check all that apply):
   - [ ] Claude Code
   - [ ] Codex CLI
   - [ ] Codex desktop app
   - [ ] Antigravity CLI
-  - [ ] Gemini CLI
+  - [ ] Kilo Code (beta)
   - [ ] Cursor
   - [ ] Claude Desktop
   - [ ] ChatGPT desktop

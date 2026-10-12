@@ -1,11 +1,12 @@
+> Historical design note. It explains why the code is shaped the way it is; details may be out of date — the code and README are authoritative.
+
 # Spec — Observation secret-scrubber (`bin/lib/scrub.mjs` + `brain scrub`)
 
 **Status:** specification. No production code exists yet.
-**Task:** LAUNCH_PLAN.md §A4. Opus writes spec + corpus; a separate agent implements against it.
-**Author:** A4 spec agent, 2026-08-04.
+**Date:** 2026-08-04.
 **Test corpus:** `evals/scrubber-corpus/positives.txt`, `evals/scrubber-corpus/negatives.txt`.
 
-> ⚠️ **Build agent — first action.** `evals/` is gitignored (`.gitignore:9`, because
+> ⚠️ **First step when this was built.** `evals/` is gitignored (`.gitignore:9`, because
 > the real eval data travels inside the encrypted blob). The corpus files are
 > therefore currently **untracked** and would never reach CI or the public
 > `agentic-brain` repo. Fix this before anything else, by adding a negation to
@@ -478,7 +479,7 @@ New command in `bin/brain.mjs` (`case 'scrub':` alongside `case 'ingest':` at
 
 ```
 brain scrub --audit            # DEFAULT. Read-only. Report only. Exit 0.
-brain scrub --audit --json     # machine-readable, for the Go-Public checklist
+brain scrub --audit --json     # machine-readable
 brain scrub --apply            # mutate. Requires backup to succeed first.
 brain scrub --apply --yes      # skip the interactive confirmation (CI only)
 brain scrub --revert <ledger>  # restore original values from a ledger
@@ -664,8 +665,8 @@ All of these must pass before the implementation is considered done.
   writes 0 unscrubbed secrets — verified by querying the DB after.
 - **D2.** `brain sync` fails loudly (non-zero exit) if the pre-export sweep (P7)
   finds a Tier-1 hit, rather than silently uploading.
-- **D3.** `brain scrub --audit --json` emits a stable schema suitable for step 2 of
-  the Go-Public Checklist (LAUNCH_PLAN.md line 76).
+- **D3.** `brain scrub --audit --json` emits a stable schema suitable for automated
+  pre-publish checks.
 - **D4.** Scrub adds **< 200ms** to a steady-state `brain ingest` run (incremental
   sweep of ~tens of rows) and **< 60s** for a full 21k-row `--audit`.
 
@@ -681,7 +682,7 @@ All of these must pass before the implementation is considered done.
 
 ---
 
-## 8. Implementation notes for the build agent
+## 8. Implementation notes
 
 - New files only: `bin/lib/scrub.mjs`, `bin/lib/scrub-detectors.mjs` (data),
   `evals/scrub.test.mjs`. Edits to existing files are confined to the insertion

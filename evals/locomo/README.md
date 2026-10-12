@@ -45,7 +45,8 @@ reader the whole conversation instead of retrieved memories):
 
 Full context wins on LoCoMo (conversations are ~26k tokens and fit in context), as it does in mem0's own paper
 (72.9 vs 66.9). With deep recall and 40 rounds, retrieval reaches **97% of full-context accuracy (86.6 vs 89.3)
-with ~18% of the tokens at about a fifth of the cost**, and beats it on open-domain (63.5 vs 62.5). Deep recall
+with ~18% of the tokens at about a fifth of the cost**, and ties it on open-domain (63.5 vs 62.5, about one
+question of 96). Deep recall
 closed most of the multi-hop gap (65.6 -> 80.5; evidence fully in context 83.3%).
 
 ## Dataset pin
