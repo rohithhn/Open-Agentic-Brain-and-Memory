@@ -359,3 +359,15 @@ Cost on this Mac (10-core Apple silicon, 16 GB):
   `data/embed-cache.db`.
 
 Per-question rows are in `data/per-question.jsonl`.
+
+## Notes on the run files (added 2026-10-12)
+
+- The `config.retrieval` strings in `qa-prf.json` and `qa-prf-k40.json` omit pseudo-relevance
+  feedback, but both runs used it (the context given to the reader matches a PRF ranking on every
+  question). `qa-main.json` is the run without it.
+- The deep-recall LongMemEval runs truncated each cross-encoder pair to 256 tokens through the
+  `BRAIN_RERANK_MAX_TOKENS` environment variable; the run files do not record this.
+- `longmemeval_m_cleaned.json` (used by `qa-m-luna-deep-k40`) comes from the same Hugging Face
+  revision `98d7416c24c778c2fee6e6f3006e7a073259d48f`; 2,737,100,077 bytes, sha256
+  `9d79e5524794a2e6900a3aa9cb7d9152c5a3e8319c9a87c25494ba1eacee495f`.
+- In `qa-main` and `qa-prf`, stored answers keep only their last 600 characters.

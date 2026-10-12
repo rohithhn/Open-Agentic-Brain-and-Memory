@@ -142,3 +142,12 @@ J, retrieval p50/p95, avg reader tokens vs the full conversation (~chars/4), and
 - The full-conversation token figure is an estimate (chars/4), the same one longmemeval uses.
 - The retrieval store holds raw turns: no distillation, no graph, nothing the product's
   curation layer would add. This is the floor of the brain's recall, not its ceiling.
+
+## Notes on the run files (added 2026-10-12)
+
+- `qa-luna-main.json` and `qa-prf.json` say "hybrid … RRF k=60" without mentioning
+  pseudo-relevance feedback, but both used it (the reader's context matches the PRF ranking on all
+  1,540 questions).
+- `qa-luna-full.json` is the whole-conversation baseline; its `k` and retrieval fields are
+  irrelevant to that run.
+- Costs are estimates at $0.10 / $0.50 per million input / output tokens.
