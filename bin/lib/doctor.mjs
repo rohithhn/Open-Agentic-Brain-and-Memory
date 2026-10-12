@@ -12,14 +12,18 @@
 //                            row (present/absent — optional accelerator, its
 //                            absence is reported, never fatal)
 //   2. Bridge home        — verifyBridgeHome() (bin/lib/bridgehome.mjs); both
-//                            shims: bridge.cjs (claude-mem) and server.cjs
-//                            (agentic-brain — WARN when missing, never FAIL)
+//                            shims: bridge.cjs (legacy claude-mem bridge —
+//                            informational unless a tool entry runs it) and
+//                            server.cjs (agentic-brain). Per-tool pull health
+//                            is judged by the shim each entry actually runs.
 //   3. Per-tool rows       — installed / capture / push / pull, from the
 //                            registry (bin/lib/wire-targets.mjs, T4 — imported
 //                            defensively: this file must still run if that
 //                            module is missing, empty, or throws)
 //   4. Live spawn probes   — start the bridge AND the agentic-brain server,
-//                            speak MCP over stdio, kill them on every path
+//                            speak MCP over stdio, kill them on every path;
+//                            the legacy bridge probe only counts toward the
+//                            exit code when some tool entry runs bridge.cjs
 //
 // Exit-code rule (documented, not just implemented): 0 iff no row/check is a
 // FAIL. A tool that is simply not installed is reported `skipped` and never
@@ -219,13 +223,19 @@ export function claudeMemRow(dbCount, dbPath = CLAUDE_MEM_DB) {
 
 // ------------------------------------------------------------- bridge home --
 
-export function bridgeHomeSection(env = process.env) {
+export function bridgeHomeSection(env = process.env, { legacyInUse = false } = {}) {
   const v = verifyBridgeHome(env);
   const rows = [];
+  // bridge.cjs is the LEGACY claude-mem bridge. `brain onboard` still installs
+  // it (installBridgeHome), but every tool entry it writes points at
+  // server.cjs (wire-targets brainServerDef). So a stale/missing bridge.cjs is
+  // informational (WARN) unless some tool config actually names it — then it
+  // is that tool's pull path and missing is a real FAIL.
+  const legacyLevel = v.shim === 'current' ? 'PASS' : legacyInUse && v.shim === 'missing' ? 'FAIL' : 'WARN';
   rows.push({
-    level: v.shim === 'current' ? 'PASS' : v.shim === 'missing' ? 'FAIL' : 'WARN',
+    level: legacyLevel,
     label: 'shim',
-    detail: `${v.shim} (${v.bridge})`,
+    detail: `legacy bridge ${v.shim} (${v.bridge})${legacyInUse ? ' — used by a tool entry' : ' — no tool entry uses it (informational)'}`,
     fix: v.shim === 'current' ? null : "run: brain onboard",
   });
   // The agentic-brain memory-server shim (server.cjs), installed alongside
@@ -251,7 +261,31 @@ export function bridgeHomeSection(env = process.env) {
   } else {
     rows.push({ level: 'FAIL', label: 'node binary', detail: 'no usable node binary resolved', fix: 'install Node 22+, then re-run: brain onboard' });
   }
+  // ok keeps its historical bridge-only meaning; pull health is judged per
+  // entry by shimHealthFor() against the shim that entry actually runs.
   return { verify: v, rows, ok: v.ok };
+}
+
+/**
+ * Health of the shim a tool entry's command actually runs. `def` is the
+ * server definition the entry carries ({command, args}); `v` is
+ * verifyBridgeHome()'s result. Returns {level, detail} — FAIL when the shim is
+ * missing or the engine pointer is broken (the tool cannot start it), WARN
+ * when the shim merely differs from the template (it still runs), PASS when
+ * current. An entry naming neither shim is not ours to judge → PASS.
+ */
+export function shimHealthFor(def, v) {
+  const args = (def && Array.isArray(def.args)) ? def.args : [];
+  const usesServer = args.includes(v.server);
+  const usesBridge = !usesServer && args.includes(v.bridge);
+  if (!usesServer && !usesBridge) return { level: 'PASS', detail: null, shim: null };
+  const shim = usesServer ? 'server.cjs' : 'bridge.cjs';
+  const state = usesServer ? v.serverShim : v.shim;
+  const pointerOk = v.pointerOk !== undefined ? v.pointerOk : !!v.engine;
+  if (state === 'missing') return { level: 'FAIL', shim, detail: `entry runs ${shim}, which is missing (see Bridge home section)` };
+  if (!pointerOk) return { level: 'FAIL', shim, detail: `entry runs ${shim}, but the engine pointer is broken (see Bridge home section)` };
+  if (state === 'stale') return { level: 'WARN', shim, detail: `entry runs ${shim}, which is out of date (still runs)` };
+  return { level: 'PASS', shim, detail: null };
 }
 
 // --------------------------------------------------------------- per-tool ---
@@ -355,10 +389,46 @@ export function checkPull(target, bridgeOk, def, registryName, registrySupersede
   if (!registered) {
     return { level: 'WARN', detail: `${registryName || 'claude-mem'} not registered in ${basename(configPath)} (${dry.action})`, fix: 'run: brain onboard' };
   }
-  if (!bridgeOk) {
+  // `bridgeOk` is either the legacy boolean (whole bridge home healthy?) or a
+  // shimHealthFor() verdict for the shim this entry actually runs.
+  const name = registryName || 'claude-mem';
+  if (bridgeOk && typeof bridgeOk === 'object') {
+    if (bridgeOk.level === 'FAIL') return { level: 'FAIL', detail: `${name} registered, but ${bridgeOk.detail}`, fix: 'run: brain onboard' };
+    if (bridgeOk.level === 'WARN') return { level: 'WARN', detail: `${name} registered in ${basename(configPath)}; ${bridgeOk.detail}`, fix: 'run: brain onboard' };
+  } else if (!bridgeOk) {
     return { level: 'FAIL', detail: 'entry present but the bridge home is not healthy (see Bridge home section)', fix: 'run: brain onboard' };
   }
-  return { level: 'PASS', detail: `${registryName || 'claude-mem'} registered in ${basename(configPath)}` };
+  return { level: 'PASS', detail: `${name} registered in ${basename(configPath)}${bridgeOk && bridgeOk.shim ? ` (${bridgeOk.shim})` : ''}` };
+}
+
+// Read-only: does any MCP server entry in this tool's config run `file` (e.g.
+// a leftover `claude-mem` entry still on ~/.agentic-brain/bridge.cjs)? Only
+// command/args of server entries count — not stray mentions elsewhere (Claude
+// Code's ~/.claude.json also stores history and pasted text).
+export function configRunsFile(target, file) {
+  let text;
+  try { text = readFileSync(target.configPath(), 'utf8'); } catch { return false; }
+  if (!text.includes(file)) return false;
+  if (target.format === 'toml') {
+    return text.split('\n').some((l) => /^\s*(args|command)\s*=/.test(l) && l.includes(file));
+  }
+  let obj;
+  try { obj = JSON.parse(text); } catch { return false; }
+  const runs = (e) => !!e && typeof e === 'object' &&
+    (e.command === file || (Array.isArray(e.args) && e.args.includes(file)) ||
+     (Array.isArray(e.command) && e.command.includes(file)));
+  const seen = new Set();
+  const walk = (o, depth) => {
+    if (!o || typeof o !== 'object' || depth > 6 || seen.has(o)) return false;
+    seen.add(o);
+    for (const [k, val] of Object.entries(o)) {
+      if (/^(mcpServers|mcp_servers|mcp|servers)$/.test(k) && val && typeof val === 'object' &&
+          Object.values(val).some(runs)) return true;
+      if (val && typeof val === 'object' && walk(val, depth + 1)) return true;
+    }
+    return false;
+  };
+  return walk(obj, 0);
 }
 
 export async function toolRows(registry, health, dbCount, bridgeOk) {
@@ -391,10 +461,19 @@ export async function toolRows(registry, health, dbCount, bridgeOk) {
     }
     const capture = checkCapture(target, health, dbCount);
     const push = checkPush(target);
-    const pull = checkPull(target, bridgeOk, registryDef, registryName, registrySupersede);
+    // Judge pull by the shim the entry runs (server.cjs today), not by the
+    // legacy bridge.cjs. A bridgeHome section ({verify}) enables that; a bare
+    // boolean keeps the old whole-home gate for older callers.
+    const shimOk = bridgeOk && typeof bridgeOk === 'object' && bridgeOk.verify
+      ? shimHealthFor(registryDef, bridgeOk.verify)
+      : bridgeOk;
+    const pull = checkPull(target, shimOk, registryDef, registryName, registrySupersede);
+    const usesLegacyBridge = bridgeOk && typeof bridgeOk === 'object' && bridgeOk.verify
+      ? configRunsFile(target, bridgeOk.verify.bridge)
+      : false;
     const levels = [capture.level, push.level, pull.level];
     const level = levels.includes('FAIL') ? 'FAIL' : levels.includes('WARN') ? 'WARN' : 'PASS';
-    rows.push({ id: target.id, name: target.name, installed: true, level, checks: { capture, push, pull }, notes: target.notes || null, restart: target.restart || 'none' });
+    rows.push({ id: target.id, name: target.name, installed: true, level, usesLegacyBridge, checks: { capture, push, pull }, notes: target.notes || null, restart: target.restart || 'none' });
   }
   return rows;
 }
@@ -645,7 +724,9 @@ function printHuman(result) {
 
   L('Live spawn probes');
   const probeLine = (label, p, extra = '') => {
-    if (p.skipped) {
+    if (!p.ok && !p.skipped && p.informational) {
+      L(`  ➖ ${label.padEnd(22)} SKIPPED (informational — no tool entry uses the legacy bridge) — ${p.error}`);
+    } else if (p.skipped) {
       L(`  ➖ ${label.padEnd(22)} SKIPPED — ${p.error}`);
     } else if (p.ok) {
       const info = p.serverInfo ? `${p.serverInfo.name || '?'} v${p.serverInfo.version || '?'}` : '(no serverInfo)';
@@ -674,7 +755,7 @@ function printHuman(result) {
     else if (!existsSync(MEMORY_DB)) dbLine = 'no store yet';
   }
   const keyLine = result.keyPresent ? 'present' : 'absent';
-  const probeSummary = (x) => (x.skipped ? 'skipped' : x.ok ? `OK (${(x.ms / 1000).toFixed(2)}s)` : 'FAIL');
+  const probeSummary = (x) => (x.skipped ? 'skipped' : x.ok ? `OK (${(x.ms / 1000).toFixed(2)}s)` : x.informational ? 'unused' : 'FAIL');
   L(`bridge: spawn ${probeSummary(p)} · agentic-brain: spawn ${probeSummary(sp)} · engine: ${result.bridgeHome.verify.engine || 'unresolved'} · key: ${keyLine} · db: ${dbLine}`);
   L('');
   L(result.exitCode === 0 ? '✅ nothing failing.' : `❌ ${result.failCount} check(s) failing — see fixes above.`);
@@ -702,12 +783,18 @@ export async function runDoctor({ json = false, timeoutMs = 10000, silent = fals
   }
 
   const brainHealth = brainHealthSection();
-  const bridgeHome = bridgeHomeSection(env);
+  let bridgeHome = bridgeHomeSection(env);
   const registry = importRegistry ? await loadRegistry(importRegistry) : await loadRegistry();
   const tools = registry.ok
-    ? await toolRows(registry, brainHealth.health, brainHealth.dbCount, bridgeHome.ok)
+    ? await toolRows(registry, brainHealth.health, brainHealth.dbCount, bridgeHome)
     : [];
+  // The legacy bridge only matters when some tool entry still runs it.
+  const legacyInUse = tools.some((t) => t.usesLegacyBridge);
+  if (legacyInUse) bridgeHome = bridgeHomeSection(env, { legacyInUse: true });
   const spawn = await spawnProbe({ timeoutMs, env });
+  // Unused legacy bridge (claude-mem not installed / no entry runs bridge.cjs):
+  // its probe result is informational and never adds to the failing count.
+  spawn.informational = !legacyInUse;
   const serverSpawn = await serverProbe({ timeoutMs, env });
 
   const allRows = [
@@ -717,7 +804,7 @@ export async function runDoctor({ json = false, timeoutMs = 10000, silent = fals
   ];
   const failCount =
     allRows.filter((r) => r.level === 'FAIL').length +
-    (spawn.ok || spawn.skipped ? 0 : 1) +
+    (spawn.ok || spawn.skipped || spawn.informational ? 0 : 1) +
     (serverSpawn.ok || serverSpawn.skipped ? 0 : 1);
   const exitCode = failCount > 0 ? 1 : 0;
 

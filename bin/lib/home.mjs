@@ -89,6 +89,35 @@ const WATCH_AGY_LABEL = 'com.claudebrain.watch-agy';
 // derived from config.json so it stays in sync with the installed launchd job's identity.
 const SYNC_LABEL = `com.${config.repo.owner}.${config.repo.name}.sync`;
 
+/**
+ * Which tool an observation was captured from, for per-tool capture freshness:
+ * 'claude' (Claude Code, incl. the desktop app's Code tab) | 'codex' |
+ * 'antigravity' | 'kilo' | null. Three label families exist:
+ *   - legacy/raw capture: generated_by_model names the tool (codex, antigravity,
+ *     claude, claude-haiku-…/haiku from claude-mem's Claude Code hooks);
+ *   - `brain distill-sessions`: generated_by_model is `brain/<provider>:<model>`
+ *     — the DISTILLER, not the source — and memory_session_id is `<tool>:<id>`;
+ *   - MCP brain_remember: generated_by_model is `mcp/<model|client>` and
+ *     memory_session_id is `mcp:<platform_source>:<id>` (bin/lib/remember.mjs).
+ * Claude Desktop chat / agent mode (claude_desktop*) is deliberately null:
+ * that row has no capture channel.
+ */
+export function captureSourceKey(model, sessionId) {
+  const g = String(model || '').toLowerCase();
+  const sid = String(sessionId || '').toLowerCase();
+  const byPlatform = (s) => s.startsWith('codex') ? 'codex' : s.startsWith('antigravity') ? 'antigravity'
+    : s.startsWith('kilo') ? 'kilo' : /^claude[-_]code/.test(s) ? 'claude' : null;
+  if (sid.startsWith('mcp:') || g.startsWith('mcp/')) {
+    return byPlatform(sid.startsWith('mcp:') ? sid.split(':')[1] || '' : g.slice(4));
+  }
+  if (g.startsWith('brain/')) {
+    const tool = sid.split(':')[0];
+    return tool === 'claude' ? 'claude' : byPlatform(tool);
+  }
+  return g.startsWith('codex') ? 'codex' : g.startsWith('antigravity') ? 'antigravity'
+    : (g.startsWith('claude') || g.startsWith('haiku')) ? 'claude' : g.startsWith('kilo') ? 'kilo' : null;
+}
+
 export function healthSignals() {
   const now = Date.now();
   // capture freshness (overall + per source)
@@ -97,12 +126,17 @@ export function healthSignals() {
     const db = openDb(MEMORY_DB, { readonly: true });
     try {
       lastObs = db.prepare('SELECT MAX(created_at_epoch) m FROM observations').get().m || 0;
-      const rows = db.prepare(`SELECT generated_by_model g, MAX(created_at_epoch) t, COUNT(*) n
-        FROM observations GROUP BY generated_by_model`).all();
+      // Group by label AND session-id prefix: distilled rows carry the
+      // DISTILLER in generated_by_model (brain/claude:haiku) and the source
+      // tool only in memory_session_id ('claude:<uuid>', 'mcp:claude_code:…').
+      const rows = db.prepare(`SELECT generated_by_model g,
+          CASE WHEN memory_session_id LIKE 'mcp:%'
+               THEN substr(memory_session_id, 1, instr(substr(memory_session_id, 5), ':') + 4)
+               ELSE substr(memory_session_id, 1, instr(memory_session_id, ':')) END p,
+          MAX(created_at_epoch) t, COUNT(*) n
+        FROM observations GROUP BY g, p`).all();
       for (const r of rows) {
-        const g = (r.g || '').toLowerCase();
-        const key = g.startsWith('codex') ? 'codex' : g.startsWith('antigravity') ? 'antigravity'
-          : (g.startsWith('claude') || g.startsWith('haiku')) ? 'claude' : g.startsWith('kilo') ? 'kilo' : null;
+        const key = captureSourceKey(r.g, r.p);
         if (!key) continue;
         if (!sources[key] || r.t > sources[key].last) sources[key] = { last: r.t, ageMs: now - r.t };
       }

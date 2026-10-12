@@ -376,6 +376,7 @@ export function verifyBridgeHome(env = process.env) {
     // `ok` does not fold it in; a caller that wants "both shims healthy" can
     // check `v.ok && v.serverShim === 'current'` itself.
     ok: shim === 'current' && ptr.valid,
+    pointerOk: ptr.valid,
     home,
     bridge,
     server,

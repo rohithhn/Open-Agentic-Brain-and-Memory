@@ -312,7 +312,8 @@ code and every answer are in [`evals/`](./evals/longmemeval/RESULTS.md).
 
 Stated plainly, because a comparison table nobody can falsify is worthless:
 
-- **One user.** This is not "battle tested". It is tested.
+- **Early: used daily by 2–3 people so far.** It is tested (unit, sandbox and CI suites on
+  macOS and Linux), but not yet battle tested by a wide user base.
 - **macOS and Linux** (verified on Debian with libsecret + systemd user units). Windows is not
   supported yet.
 - **Cross-machine sync uploads the whole encrypted file**, not just the changes. That is the

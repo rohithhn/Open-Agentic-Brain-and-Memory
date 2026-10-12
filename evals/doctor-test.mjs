@@ -28,9 +28,11 @@ import {
   spawnProbe,
   serverProbe,
   distillerRows,
+  shimHealthFor,
+  configRunsFile,
 } from '../bin/lib/doctor.mjs';
 import { bridgePath, serverPath, BRIDGE_FILENAME, SERVER_FILENAME } from '../bin/lib/bridgehome.mjs';
-import { healthSignals } from '../bin/lib/home.mjs';
+import { healthSignals, captureSourceKey } from '../bin/lib/home.mjs';
 
 const ROOT = mkdtempSync(join(tmpdir(), 'doctor-test-'));
 
@@ -368,16 +370,97 @@ await t('serverProbe: the REAL bin/mcp-server.mjs answers via a real server-shim
 // 4c. New rows: server shim (never a FAIL) and claude-mem (optional, honest)
 // ==========================================================================
 
-await t('bridgeHomeSection: empty home → bridge shim FAIL, server shim WARN (never FAIL — pre-server machines must not flip)', () => {
+await t('bridgeHomeSection: empty home → legacy bridge WARN when unused (FAIL only if an entry runs it), server shim WARN', () => {
   const dir = scratchDir();
   const s = bridgeHomeSection({ AGENTIC_BRAIN_HOME: dir });
   const shim = s.rows.find((r) => r.label === 'shim');
   const srv = s.rows.find((r) => r.label === 'server shim');
   assert(shim && srv, 'both shim rows must exist');
-  eq(shim.level, 'FAIL', 'missing bridge shim stays FAIL (unchanged meaning)');
-  eq(srv.level, 'WARN', 'missing server shim must be WARN, not FAIL');
+  eq(shim.level, 'WARN', 'missing legacy bridge nobody uses is informational');
+  assert(/brain onboard/.test(shim.fix), 'fix hint should be brain onboard');
+  eq(srv.level, 'WARN', 'missing server shim row is WARN (tool pulls carry the FAIL)');
   assert(/agentic-brain/.test(srv.detail), 'server shim row should name the agentic-brain server');
   eq(s.ok, false, 'ok keeps its bridge-only meaning');
+  const used = bridgeHomeSection({ AGENTIC_BRAIN_HOME: dir }, { legacyInUse: true });
+  eq(used.rows.find((r) => r.label === 'shim').level, 'FAIL', 'missing legacy bridge that an entry runs is a FAIL');
+});
+
+// Builds a bridge home: real server shim + pointer, and a STALE legacy
+// bridge.cjs that exits like bridge.cjs does when claude-mem is absent.
+function staleLegacyHome() {
+  const dir = scratchDir();
+  const repoRoot = join(import.meta.dirname, '..');
+  const env = { ...process.env, AGENTIC_BRAIN_HOME: dir };
+  writeFileSync(bridgePath(env), "process.stderr.write('claude-mem: mcp server not found (is the claude-mem plugin installed?)\\n'); process.exit(1);\n");
+  writeFileSync(serverPath(env), readFileSync(join(repoRoot, 'bin', 'templates', 'server-shim.cjs'), 'utf8'));
+  writeFileSync(join(dir, 'engine-path'), repoRoot + '\n');
+  const cfg = join(dir, 'tool', 'mcp.json');
+  mkdirSync(join(dir, 'tool'), { recursive: true });
+  writeFileSync(cfg, JSON.stringify({ mcpServers: { 'agentic-brain': { command: 'node', args: [serverPath(env)] } } }, null, 2));
+  const registry = {
+    ok: true,
+    SERVER_NAME: 'agentic-brain',
+    brainServerDef: () => ({ command: 'node', args: [serverPath(env)] }),
+    supersedeSpec: () => ({ name: 'claude-mem', paths: [bridgePath(env)] }),
+    TARGETS: [{ id: 'fixture-tool', name: 'Fixture Tool', format: 'json', configPath: () => cfg, capture: 'none', push: null, restart: 'none' }],
+  };
+  return { dir, env, cfg, registry };
+}
+
+await t('toolRows: stale legacy bridge.cjs + current server.cjs → pull PASS (judged by the shim the entry runs)', async () => {
+  const { env, registry } = staleLegacyHome();
+  const bh = bridgeHomeSection(env);
+  eq(bh.verify.shim, 'stale', 'fixture: legacy bridge is stale');
+  eq(bh.verify.serverShim, 'current', 'fixture: server shim is current');
+  eq(bh.rows.find((r) => r.label === 'shim').level, 'WARN', 'stale unused legacy bridge is WARN, not FAIL');
+  const rows = await toolRows(registry, healthSignals(), 0, bh);
+  eq(rows[0].checks.pull.level, 'PASS', `pull must PASS, got: ${rows[0].checks.pull.detail}`);
+  eq(rows[0].usesLegacyBridge, false, 'no entry runs bridge.cjs');
+  eq(rows[0].level, 'PASS', 'tool row PASS');
+});
+
+await t('shimHealthFor: entry on server.cjs → missing FAIL / stale WARN / current PASS; broken pointer FAIL', () => {
+  const v = { server: '/h/server.cjs', bridge: '/h/bridge.cjs', serverShim: 'current', shim: 'stale', pointerOk: true, engine: '/e' };
+  const def = { command: 'node', args: ['/h/server.cjs'] };
+  eq(shimHealthFor(def, v).level, 'PASS', 'current server shim');
+  eq(shimHealthFor(def, { ...v, serverShim: 'stale' }).level, 'WARN', 'stale server shim still runs');
+  eq(shimHealthFor(def, { ...v, serverShim: 'missing' }).level, 'FAIL', 'missing server shim');
+  eq(shimHealthFor(def, { ...v, pointerOk: false }).level, 'FAIL', 'broken pointer');
+  eq(shimHealthFor({ command: 'node', args: ['/h/bridge.cjs'] }, v).level, 'WARN', 'entry on stale legacy bridge → WARN');
+});
+
+await t('configRunsFile: only MCP server command/args count, not stray mentions', () => {
+  const dir = scratchDir();
+  const f = join(dir, 'c.json');
+  writeFileSync(f, JSON.stringify({ history: ['node /h/bridge.cjs'], projects: { '/p': { mcpServers: { x: { command: 'node', args: ['/h/server.cjs'] } } } } }));
+  eq(configRunsFile({ format: 'json', configPath: () => f }, '/h/bridge.cjs'), false, 'history mention is not an entry');
+  writeFileSync(f, JSON.stringify({ projects: { '/p': { mcpServers: { old: { command: 'node', args: ['/h/bridge.cjs'] } } } } }));
+  eq(configRunsFile({ format: 'json', configPath: () => f }, '/h/bridge.cjs'), true, 'nested project entry counts');
+  const tf = join(dir, 'c.toml');
+  writeFileSync(tf, '[mcp_servers.claude-mem]\ncommand = "node"\nargs = ["/h/bridge.cjs"]\n');
+  eq(configRunsFile({ format: 'toml', configPath: () => tf }, '/h/bridge.cjs'), true, 'toml args entry counts');
+});
+
+await t('runDoctor: claude-mem absent (legacy bridge exits 1, unused) → bridge probe informational, not counted as failing', async () => {
+  const { env, registry } = staleLegacyHome();
+  const { result } = await runDoctor({ json: true, silent: true, timeoutMs: 8000, env, importRegistry: () => Promise.resolve(registry) });
+  eq(result.spawn.ok, false, 'fixture: legacy bridge probe fails like a claude-mem-less machine');
+  eq(result.spawn.informational, true, 'unused legacy bridge probe is informational');
+  eq(result.tools[0].checks.pull.level, 'PASS', 'tool pull PASS');
+  eq(result.serverSpawn.ok, true, `agentic-brain probe should pass: ${result.serverSpawn.error}`);
+  const rowFails = [...result.brainHealth.rows, ...result.bridgeHome.rows, ...Object.values(result.tools[0].checks)]
+    .filter((r) => r.level === 'FAIL').length;
+  eq(result.failCount, rowFails, 'failCount must not include the informational bridge probe');
+});
+
+await t('captureSourceKey: distilled/MCP Claude Code rows count as claude; desktop chat does not', () => {
+  eq(captureSourceKey('brain/claude:haiku', 'claude:'), 'claude', 'distilled Claude Code session');
+  eq(captureSourceKey('brain/codex', 'claude:'), 'claude', 'Claude Code session distilled by codex provider');
+  eq(captureSourceKey('brain/claude:haiku', 'codex:'), 'codex', 'Codex session distilled by claude provider');
+  eq(captureSourceKey('mcp/claude-opus-4-6', 'mcp:claude_code:'), 'claude', 'brain_remember from Claude Code');
+  eq(captureSourceKey('mcp/local-agent-mode-agentic-brain', 'mcp:claude_desktop_agent:'), null, 'Claude Desktop agent mode has no capture row');
+  eq(captureSourceKey('claude-haiku-4-5-20251001', ''), 'claude', 'legacy claude-mem label');
+  eq(captureSourceKey('codex', 'codex:'), 'codex', 'raw codex label');
 });
 
 await t('bridgeHomeSection: real templates installed → both shim rows PASS, ok unchanged in meaning', () => {
