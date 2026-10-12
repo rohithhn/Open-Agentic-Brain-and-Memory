@@ -1,0 +1,53 @@
+{
+  "benchmark": "LoCoMo (locomo10), end-to-end QA, LLM-judge accuracy J, categories 1-4",
+  "config": {
+    "retrieval": "brain_recall hybrid (BM25 + all-MiniLM-L6-v2, RRF k=60)",
+    "unit": "round",
+    "k": 20,
+    "reader": "gpt-6-luna",
+    "judge": "gpt-6-luna",
+    "judgePrompt": "mem0's published LLM-as-a-judge (J) style, CORRECT/WRONG",
+    "categoriesScored": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "category5": "excluded"
+  },
+  "selection": {
+    "stride": 1,
+    "questions": 1540,
+    "answered": 1540,
+    "missing": 0
+  },
+  "J": 78.8,
+  "byCategory": {
+    "1-multi-hop": {
+      "n": 282,
+      "J": 65.6
+    },
+    "2-temporal": {
+      "n": 321,
+      "J": 76.9
+    },
+    "3-open-domain": {
+      "n": 96,
+      "J": 59.4
+    },
+    "4-single-hop": {
+      "n": 841,
+      "J": 86.2
+    }
+  },
+  "categoryAveragedJ": 72,
+  "evidenceInContext": 71.3,
+  "retrievalLatencyMs": {
+    "p50": 21.3,
+    "p95": 26.9,
+    "max": 247.3
+  },
+  "avgReaderTokens": 2038,
+  "avgFullConversationTokensEstimate": 26023,
+  "totalCostUsdEquivalent": 0.47
+}

@@ -123,7 +123,7 @@ Requires macOS or Linux, `git`, `node` (22+), and a GitHub account. The installe
 missing dependencies (`age`, `tar`, `gh`).
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rohithhn/Ultra-Agentic-Memory-Brain-Public/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rohithhn/Ultra-Agentic-Memory-and-Brain-Public/main/install.sh | bash
 ```
 
 The installer picks one of two modes:

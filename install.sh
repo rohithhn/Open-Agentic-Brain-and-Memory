@@ -5,7 +5,7 @@
 #            private brain repo + encryption key and does the first sync.
 #   RESTORE  you already have a brain: clone it, paste your key, `brain restore`.
 #
-#   curl -fsSL https://raw.githubusercontent.com/rohithhn/Ultra-Agentic-Memory-Brain-Public/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/rohithhn/Ultra-Agentic-Memory-and-Brain-Public/main/install.sh | bash
 #
 # There are TWO repo slugs and they are not the same thing:
 #   ENGINE_REPO  where this installer fetches the ENGINE CODE from.
@@ -20,7 +20,7 @@
 set -euo pipefail
 
 TARGET="${CLAUDE_BRAIN_DIR:-$HOME/Documents/Brain-claude-mem}"
-ENGINE_REPO_DEFAULT="rohithhn/Ultra-Agentic-Memory-Brain-Public"
+ENGINE_REPO_DEFAULT="rohithhn/Ultra-Agentic-Memory-and-Brain-Public"
 ENGINE_REPO="${AGENTIC_BRAIN_REPO:-$ENGINE_REPO_DEFAULT}"
 
 echo "🧠 Agentic Brain installer"

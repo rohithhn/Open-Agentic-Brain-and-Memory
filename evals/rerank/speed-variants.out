@@ -1,0 +1,48 @@
+=== Xenova/ms-marco-TinyBERT-L-2-v2 pool 100 maxlen 256
+  50/235 · 19s · ce 1.79 ms/pair, avg pool 152
+  100/235 · 37s · ce 1.74 ms/pair, avg pool 152
+  150/235 · 56s · ce 1.74 ms/pair, avg pool 152
+  200/235 · 74s · ce 1.75 ms/pair, avg pool 151
+  235/235 · 87s · ce 1.74 ms/pair, avg pool 151
+dev (118 q) — recall_any@1 | recall_any@5 | recall_all@5 | recall_all@10 | ndcg_any@10 | allEvidenceRounds@10 | allEvidenceRounds@20 | allEvidenceRounds@40 | ms@40
+base                        89  99.2  90.7  97.5  93.3  80.5  89.8  96.6  93.1
+ce-base50                 94.9  99.2  94.9  98.3  96.7    89  95.8  97.5  96.6
+ce-pool                   94.9  99.2  93.2  98.3  96.7  89.8  94.1  98.3  93.1
+pin3+ce-pool                89   100  93.2  98.3    94  89.8  94.1  98.3  93.1
+test (117 q) — recall_any@1 | recall_any@5 | recall_all@5 | recall_all@10 | ndcg_any@10 | allEvidenceRounds@10 | allEvidenceRounds@20 | allEvidenceRounds@40 | ms@40
+base                      87.2  97.4    88    94  90.5  80.3  88.9  92.3  86.7
+ce-base50                 86.3  94.9    88  94.9    91  85.5    88  93.2  86.7
+ce-pool                   86.3  96.6  88.9  94.9  91.4  87.2  92.3  95.7  93.3
+pin3+ce-pool              87.2  98.3  91.5  95.7  91.4  87.2  92.3  95.7  93.3
+=== Xenova/ms-marco-MiniLM-L-6-v2 pool 100 maxlen 128
+  50/235 · 58s · ce 6.86 ms/pair, avg pool 152
+  100/235 · 115s · ce 6.81 ms/pair, avg pool 152
+  150/235 · 172s · ce 6.81 ms/pair, avg pool 152
+  200/235 · 231s · ce 6.90 ms/pair, avg pool 151
+  235/235 · 272s · ce 6.90 ms/pair, avg pool 151
+dev (118 q) — recall_any@1 | recall_any@5 | recall_all@5 | recall_all@10 | ndcg_any@10 | allEvidenceRounds@10 | allEvidenceRounds@20 | allEvidenceRounds@40 | ms@40
+base                        89  99.2  90.7  97.5  93.3  80.5  89.8  96.6  93.1
+ce-base50                 96.6   100  96.6  98.3  97.5  90.7  94.9  96.6  93.1
+ce-pool                   97.5   100  94.1  97.5  97.7  91.5  94.9  96.6  89.7
+pin3+ce-pool                89   100  92.4  97.5  93.8  90.7  94.9  96.6  89.7
+test (117 q) — recall_any@1 | recall_any@5 | recall_all@5 | recall_all@10 | ndcg_any@10 | allEvidenceRounds@10 | allEvidenceRounds@20 | allEvidenceRounds@40 | ms@40
+base                      87.2  97.4    88    94  90.5  80.3  88.9  92.3  86.7
+ce-base50                 93.2  98.3  88.9  95.7  94.4  88.9  91.5  93.2  86.7
+ce-pool                     94  98.3  91.5  96.6  95.1  92.3  94.9  97.4  100
+pin3+ce-pool              87.2  98.3  92.3  96.6  91.9  91.5  94.9  97.4  100
+=== Xenova/ms-marco-MiniLM-L-6-v2 pool 50 maxlen 256
+  50/235 · 71s · ce 15.14 ms/pair, avg pool 86
+  100/235 · 144s · ce 15.26 ms/pair, avg pool 86
+  150/235 · 216s · ce 15.26 ms/pair, avg pool 86
+  200/235 · 287s · ce 15.29 ms/pair, avg pool 86
+  235/235 · 335s · ce 15.27 ms/pair, avg pool 86
+dev (118 q) — recall_any@1 | recall_any@5 | recall_all@5 | recall_all@10 | ndcg_any@10 | allEvidenceRounds@10 | allEvidenceRounds@20 | allEvidenceRounds@40 | ms@40
+base                        89  99.2  90.7  97.5  93.3  80.5  89.8  96.6  93.1
+ce-base50                 95.8   100  95.8  97.5    97  90.7  94.9  96.6  93.1
+ce-pool                   96.6   100  94.9  96.6  97.2  91.5  94.9  97.5  93.1
+pin3+ce-pool                89   100  94.1  96.6  93.5  91.5  94.9  97.5  93.1
+test (117 q) — recall_any@1 | recall_any@5 | recall_all@5 | recall_all@10 | ndcg_any@10 | allEvidenceRounds@10 | allEvidenceRounds@20 | allEvidenceRounds@40 | ms@40
+base                      87.2  97.4    88    94  90.5  80.3  88.9  92.3  86.7
+ce-base50                 91.5  98.3  89.7  94.9  93.5  86.3  90.6  93.2  86.7
+ce-pool                   91.5  97.4  91.5  95.7    94  88.9  92.3  95.7  90
+pin3+ce-pool              87.2  98.3  91.5  95.7  91.6  88.9  92.3  95.7  90

@@ -25,7 +25,7 @@ fi
 # identifier (the copyright holder line, the public install address). They are
 # deleted from the text before DENY runs; the same identifier anywhere else is
 # still blocked. Bracketed like DENY so this file does not trip itself.
-ALLOW='Copyright 2026 r[o]hithhn \(https://github\.com/r[o]hithhn\)|github\.com/r[o]hithhn/Ultra-Agentic-Memory-Brain-Public|r[o]hithhn/Ultra-Agentic-Memory-Brain-Public'
+ALLOW='Copyright 2026 r[o]hithhn \(https://github\.com/r[o]hithhn\)|github\.com/r[o]hithhn/Ultra-Agentic-Memory-and-Brain-Public|r[o]hithhn/Ultra-Agentic-Memory-and-Brain-Public'
 DENY_PATHS='^(memory/|wiki/|learnings/|context/|launch/|settings/|\.brain-tmp/|config\.json$|MANIFEST\.json$|AGENTS\.md$|plan\.md$|LAUNCH_PLAN\.md$)'
 
 files=$(git diff --cached --name-only --diff-filter=ACMR)

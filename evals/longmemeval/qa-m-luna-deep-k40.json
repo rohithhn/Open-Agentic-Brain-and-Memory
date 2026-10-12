@@ -1,0 +1,58 @@
+{
+  "benchmark": "LongMemEval-M (cleaned), end-to-end QA accuracy",
+  "config": {
+    "retrieval": "brain_recall hybrid (BM25 + all-MiniLM-L6-v2, RRF k=60, PRF) + deep rerank (ms-marco-MiniLM-L-6-v2 over a ~150-row pool), round units",
+    "k": 40,
+    "reader": "gpt-6-luna",
+    "judge": "gpt-6-luna",
+    "judgePrompts": "LongMemEval evaluate_qa.py, per type"
+  },
+  "selection": {
+    "stride": 1,
+    "questions": 500,
+    "answered": 500,
+    "missing": 0
+  },
+  "accuracy": 83,
+  "accuracyNonAbstention": 82.8,
+  "abstention": {
+    "n": 30,
+    "accuracy": 86.7
+  },
+  "taskAveragedAccuracy": 82.8,
+  "byType": {
+    "knowledge-update": {
+      "n": 78,
+      "accuracy": 92.3
+    },
+    "multi-session": {
+      "n": 133,
+      "accuracy": 72.9
+    },
+    "single-session-assistant": {
+      "n": 56,
+      "accuracy": 100
+    },
+    "single-session-preference": {
+      "n": 30,
+      "accuracy": 56.7
+    },
+    "single-session-user": {
+      "n": 70,
+      "accuracy": 94.3
+    },
+    "temporal-reasoning": {
+      "n": 133,
+      "accuracy": 80.5
+    }
+  },
+  "evidenceInContext": 97.9,
+  "retrievalLatencyMs": {
+    "p50": 2385.1,
+    "p95": 3250.2,
+    "max": 169680.9
+  },
+  "avgReaderTokens": 19053,
+  "avgHaystackTokensEstimate": 1268542,
+  "totalCostUsdEquivalent": 1.02
+}

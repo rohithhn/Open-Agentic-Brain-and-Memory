@@ -36,3 +36,6 @@ evals/*.jsonl
 node_modules/
 *.log
 .DS_Store
+
+# Benchmark evidence cited by the paper (deep-recall held-out run).
+!evals/rerank/full-p100.log

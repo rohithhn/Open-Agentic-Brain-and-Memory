@@ -1,0 +1,10 @@
+  50/470 · 104s · ce 13.10 ms/pair, avg pool 151
+  100/470 · 211s · ce 13.15 ms/pair, avg pool 152
+  150/470 · 329s · ce 13.65 ms/pair, avg pool 152
+  200/470 · 454s · ce 14.12 ms/pair, avg pool 152
+  250/470 · 565s · ce 14.12 ms/pair, avg pool 152
+  300/470 · 674s · ce 14.03 ms/pair, avg pool 152
+  350/470 · 788s · ce 14.09 ms/pair, avg pool 152
+  400/470 · 904s · ce 14.16 ms/pair, avg pool 151
+  450/470 · 1027s · ce 14.29 ms/pair, avg pool 152
+  470/470 · 1074s · ce 14.31 ms/pair, avg pool 151

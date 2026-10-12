@@ -1,0 +1,247 @@
+{
+  "model": "Xenova/ms-marco-MiniLM-L-6-v2",
+  "pool": 100,
+  "maxlen": 256,
+  "questions": 470,
+  "msPerPair": 14.31,
+  "avgPool": 151,
+  "splits": {
+    "dev": {
+      "base": {
+        "recall_any@1": 88.1,
+        "recall_any@5": 98.3,
+        "recall_all@5": 89.4,
+        "recall_all@10": 95.7,
+        "ndcg_any@10": 91.9,
+        "allEvidenceRounds@10": 80.4,
+        "allEvidenceRounds@20": 89.4,
+        "allEvidenceRounds@40": 94.5,
+        "multi-session allEvidenceRounds@40": 89.8
+      },
+      "ce-base50": {
+        "recall_any@1": 93.6,
+        "recall_any@5": 99.1,
+        "recall_all@5": 92.8,
+        "recall_all@10": 96.2,
+        "ndcg_any@10": 95.2,
+        "allEvidenceRounds@10": 88.5,
+        "allEvidenceRounds@20": 92.8,
+        "allEvidenceRounds@40": 94.9,
+        "multi-session allEvidenceRounds@40": 89.8
+      },
+      "ce-pool": {
+        "recall_any@1": 94.5,
+        "recall_any@5": 98.7,
+        "recall_all@5": 93.2,
+        "recall_all@10": 96.2,
+        "ndcg_any@10": 95.7,
+        "allEvidenceRounds@10": 90.6,
+        "allEvidenceRounds@20": 94,
+        "allEvidenceRounds@40": 97,
+        "multi-session allEvidenceRounds@40": 94.9
+      },
+      "rrf(base,ce-pool)": {
+        "recall_any@1": 91.1,
+        "recall_any@5": 99.1,
+        "recall_all@5": 93.2,
+        "recall_all@10": 96.2,
+        "ndcg_any@10": 94.2,
+        "allEvidenceRounds@10": 88.9,
+        "allEvidenceRounds@20": 92.8,
+        "allEvidenceRounds@40": 94.5,
+        "multi-session allEvidenceRounds@40": 89.8
+      },
+      "rrf(base,ce-pool w2)": {
+        "recall_any@1": 93.2,
+        "recall_any@5": 99.1,
+        "recall_all@5": 92.8,
+        "recall_all@10": 96.6,
+        "ndcg_any@10": 95.1,
+        "allEvidenceRounds@10": 89.8,
+        "allEvidenceRounds@20": 93.2,
+        "allEvidenceRounds@40": 97,
+        "multi-session allEvidenceRounds@40": 94.9
+      },
+      "pin3+ce-pool": {
+        "recall_any@1": 88.1,
+        "recall_any@5": 99.1,
+        "recall_all@5": 93.2,
+        "recall_all@10": 96.2,
+        "ndcg_any@10": 92.6,
+        "allEvidenceRounds@10": 90.6,
+        "allEvidenceRounds@20": 94,
+        "allEvidenceRounds@40": 97,
+        "multi-session allEvidenceRounds@40": 94.9
+      },
+      "pin5+rrf(base,ce-pool)": {
+        "recall_any@1": 88.1,
+        "recall_any@5": 98.7,
+        "recall_all@5": 89.8,
+        "recall_all@10": 96.2,
+        "ndcg_any@10": 92.1,
+        "allEvidenceRounds@10": 87.2,
+        "allEvidenceRounds@20": 92.8,
+        "allEvidenceRounds@40": 94.5,
+        "multi-session allEvidenceRounds@40": 89.8
+      }
+    },
+    "test": {
+      "base": {
+        "recall_any@1": 87.2,
+        "recall_any@5": 98.3,
+        "recall_all@5": 85.5,
+        "recall_all@10": 92.8,
+        "ndcg_any@10": 90.6,
+        "allEvidenceRounds@10": 76.6,
+        "allEvidenceRounds@20": 87.2,
+        "allEvidenceRounds@40": 91.1,
+        "multi-session allEvidenceRounds@40": 80.6
+      },
+      "ce-base50": {
+        "recall_any@1": 92.8,
+        "recall_any@5": 97.9,
+        "recall_all@5": 91.9,
+        "recall_all@10": 94.9,
+        "ndcg_any@10": 94.5,
+        "allEvidenceRounds@10": 84.3,
+        "allEvidenceRounds@20": 91.9,
+        "allEvidenceRounds@40": 93.6,
+        "multi-session allEvidenceRounds@40": 85.5
+      },
+      "ce-pool": {
+        "recall_any@1": 93.2,
+        "recall_any@5": 98.3,
+        "recall_all@5": 94.9,
+        "recall_all@10": 97.4,
+        "ndcg_any@10": 95.5,
+        "allEvidenceRounds@10": 86,
+        "allEvidenceRounds@20": 92.8,
+        "allEvidenceRounds@40": 97,
+        "multi-session allEvidenceRounds@40": 98.4
+      },
+      "rrf(base,ce-pool)": {
+        "recall_any@1": 91.1,
+        "recall_any@5": 98.3,
+        "recall_all@5": 91.1,
+        "recall_all@10": 94.9,
+        "ndcg_any@10": 93.9,
+        "allEvidenceRounds@10": 83.4,
+        "allEvidenceRounds@20": 90.2,
+        "allEvidenceRounds@40": 94,
+        "multi-session allEvidenceRounds@40": 87.1
+      },
+      "rrf(base,ce-pool w2)": {
+        "recall_any@1": 91.5,
+        "recall_any@5": 98.3,
+        "recall_all@5": 92.3,
+        "recall_all@10": 95.3,
+        "ndcg_any@10": 94.2,
+        "allEvidenceRounds@10": 84.3,
+        "allEvidenceRounds@20": 93.2,
+        "allEvidenceRounds@40": 97.4,
+        "multi-session allEvidenceRounds@40": 98.4
+      },
+      "pin3+ce-pool": {
+        "recall_any@1": 87.2,
+        "recall_any@5": 98.3,
+        "recall_all@5": 94.5,
+        "recall_all@10": 97.4,
+        "ndcg_any@10": 92.6,
+        "allEvidenceRounds@10": 86.8,
+        "allEvidenceRounds@20": 93.2,
+        "allEvidenceRounds@40": 97,
+        "multi-session allEvidenceRounds@40": 98.4
+      },
+      "pin5+rrf(base,ce-pool)": {
+        "recall_any@1": 87.2,
+        "recall_any@5": 98.7,
+        "recall_all@5": 90.2,
+        "recall_all@10": 94.9,
+        "ndcg_any@10": 91.4,
+        "allEvidenceRounds@10": 83,
+        "allEvidenceRounds@20": 90.2,
+        "allEvidenceRounds@40": 94,
+        "multi-session allEvidenceRounds@40": 87.1
+      }
+    },
+    "all": {
+      "base": {
+        "recall_any@1": 87.7,
+        "recall_any@5": 98.3,
+        "recall_all@5": 87.4,
+        "recall_all@10": 94.3,
+        "ndcg_any@10": 91.2,
+        "allEvidenceRounds@10": 78.5,
+        "allEvidenceRounds@20": 88.3,
+        "allEvidenceRounds@40": 92.8,
+        "multi-session allEvidenceRounds@40": 85.1
+      },
+      "ce-base50": {
+        "recall_any@1": 93.2,
+        "recall_any@5": 98.5,
+        "recall_all@5": 92.3,
+        "recall_all@10": 95.5,
+        "ndcg_any@10": 94.9,
+        "allEvidenceRounds@10": 86.4,
+        "allEvidenceRounds@20": 92.3,
+        "allEvidenceRounds@40": 94.3,
+        "multi-session allEvidenceRounds@40": 87.6
+      },
+      "ce-pool": {
+        "recall_any@1": 93.8,
+        "recall_any@5": 98.5,
+        "recall_all@5": 94,
+        "recall_all@10": 96.8,
+        "ndcg_any@10": 95.6,
+        "allEvidenceRounds@10": 88.3,
+        "allEvidenceRounds@20": 93.4,
+        "allEvidenceRounds@40": 97,
+        "multi-session allEvidenceRounds@40": 96.7
+      },
+      "rrf(base,ce-pool)": {
+        "recall_any@1": 91.1,
+        "recall_any@5": 98.7,
+        "recall_all@5": 92.1,
+        "recall_all@10": 95.5,
+        "ndcg_any@10": 94.1,
+        "allEvidenceRounds@10": 86.2,
+        "allEvidenceRounds@20": 91.5,
+        "allEvidenceRounds@40": 94.3,
+        "multi-session allEvidenceRounds@40": 88.4
+      },
+      "rrf(base,ce-pool w2)": {
+        "recall_any@1": 92.3,
+        "recall_any@5": 98.7,
+        "recall_all@5": 92.6,
+        "recall_all@10": 96,
+        "ndcg_any@10": 94.6,
+        "allEvidenceRounds@10": 87,
+        "allEvidenceRounds@20": 93.2,
+        "allEvidenceRounds@40": 97.2,
+        "multi-session allEvidenceRounds@40": 96.7
+      },
+      "pin3+ce-pool": {
+        "recall_any@1": 87.7,
+        "recall_any@5": 98.7,
+        "recall_all@5": 93.8,
+        "recall_all@10": 96.8,
+        "ndcg_any@10": 92.6,
+        "allEvidenceRounds@10": 88.7,
+        "allEvidenceRounds@20": 93.6,
+        "allEvidenceRounds@40": 97,
+        "multi-session allEvidenceRounds@40": 96.7
+      },
+      "pin5+rrf(base,ce-pool)": {
+        "recall_any@1": 87.7,
+        "recall_any@5": 98.7,
+        "recall_all@5": 90,
+        "recall_all@10": 95.5,
+        "ndcg_any@10": 91.7,
+        "allEvidenceRounds@10": 85.1,
+        "allEvidenceRounds@20": 91.5,
+        "allEvidenceRounds@40": 94.3,
+        "multi-session allEvidenceRounds@40": 88.4
+      }
+    }
+  }
+}
