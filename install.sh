@@ -19,7 +19,15 @@
 # literal here. Keep ENGINE_REPO_DEFAULT and the README one-liner in step.
 set -euo pipefail
 
-TARGET="${CLAUDE_BRAIN_DIR:-$HOME/Documents/Brain-claude-mem}"
+# Engine folder: CLAUDE_BRAIN_DIR wins; else ~/agentic-brain (works on macOS and
+# Linux, where ~/Documents often doesn't exist). Installs made before that default
+# changed live at the legacy ~/Documents/Brain-claude-mem — reuse it when it is
+# the only one present so a re-run updates it in place instead of cloning twice.
+if [ -n "${CLAUDE_BRAIN_DIR:-}" ]; then TARGET="$CLAUDE_BRAIN_DIR"
+elif [ -f "$HOME/agentic-brain/bin/brain.mjs" ]; then TARGET="$HOME/agentic-brain"
+elif [ -f "$HOME/Documents/Brain-claude-mem/bin/brain.mjs" ]; then TARGET="$HOME/Documents/Brain-claude-mem"
+else TARGET="$HOME/agentic-brain"
+fi
 ENGINE_REPO_DEFAULT="rohithhn/Ultra-Agentic-Memory-and-Brain-Public"
 ENGINE_REPO="${AGENTIC_BRAIN_REPO:-$ENGINE_REPO_DEFAULT}"
 
@@ -158,7 +166,7 @@ ask_past_sessions() {
     {
       echo ""
       echo "🧠 Your AI tools already keep your past sessions on this computer"
-      echo "   (Claude Code, Codex, Cursor, Gemini, Antigravity, Kilo)."
+      echo "   (Claude Code, Codex, Cursor, Antigravity, Kilo)."
       echo "   Starting your memory with them means your tools know your work from day one."
       echo "   They're turned into memories on this computer; you can see and delete any of them."
       echo ""
@@ -334,7 +342,7 @@ echo ""
 if [ -n "$(node bin/brain.mjs past-sessions status --fresh 2>/dev/null)" ]; then
   echo "🌱 Starting fresh: your memory begins with your next AI session."
 else
-  echo "🔎 Reading your past AI sessions (Claude Code, Codex, Cursor, Gemini, Antigravity, Kilo)…"
+  echo "🔎 Reading your past AI sessions (Claude Code, Codex, Cursor, Antigravity, Kilo)…"
 fi
 node bin/brain.mjs ingest >/dev/null 2>&1 || true
 [ "${BRAIN_NO_AUTOMATION:-}" = "1" ] || node bin/brain.mjs distill-sessions --install >/dev/null 2>&1 || true

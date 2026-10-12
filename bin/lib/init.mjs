@@ -346,7 +346,7 @@ export async function runInit(opts = {}, depsOverride = {}) {
   if (top.ok && top.out && top.out !== REPO_ROOT) {
     throw new InitError(
       `${REPO_ROOT} sits inside another git repository (${top.out}).\n` +
-        `  Move the engine to its own directory (e.g. ~/Documents/Brain-claude-mem) and re-run: brain init`,
+        `  Move the engine to its own directory (e.g. ~/agentic-brain) and re-run: brain init`,
       { code: 'NESTED_WORKTREE', resumable: true, step: 1, exitCode: 2 }
     );
   }

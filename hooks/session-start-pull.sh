@@ -2,7 +2,14 @@
 # Claude Code SessionStart hook: pull the latest brain from the cloud and merge
 # any newer memory from your other machines into the local DB. Runs in the
 # background so it never blocks session start.
-REPO="${CLAUDE_BRAIN_DIR:-$HOME/Documents/Brain-claude-mem}"
+# Engine folder: CLAUDE_BRAIN_DIR, else ~/agentic-brain, else the legacy
+# ~/Documents/Brain-claude-mem (installs made before the default changed).
+REPO="${CLAUDE_BRAIN_DIR:-}"
+if [ -z "$REPO" ]; then
+  REPO="$HOME/agentic-brain"
+  [ ! -f "$REPO/bin/brain.mjs" ] && [ -f "$HOME/Documents/Brain-claude-mem/bin/brain.mjs" ] \
+    && REPO="$HOME/Documents/Brain-claude-mem"
+fi
 [ -d "$REPO/.git" ] || exit 0
 # Not for the brain's own headless runs (BRAIN_DISTILLER=1): one pull per
 # distilled session is pure churn.

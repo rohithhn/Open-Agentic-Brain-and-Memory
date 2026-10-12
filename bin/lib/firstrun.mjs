@@ -2,7 +2,7 @@
 // with turning that history into memories.
 //
 // A new install back-fills from history already on disk (Claude Code, Codex,
-// Cursor, Gemini, Antigravity, Kilo, ...): ingest finds the sessions at once,
+// Cursor, Antigravity, Kilo, ...): ingest finds the sessions at once,
 // the distiller turns them into memories over the following hours. Without a
 // report of that, a new user opens a near-empty panel and assumes it's broken.
 // Read-only: everything here opens the store read-only and writes nothing.

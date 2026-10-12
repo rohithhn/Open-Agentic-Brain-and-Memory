@@ -92,7 +92,6 @@ function stubEnv(stub) {
   resetBinaryCache();
   const e = { ...process.env };
   e.BRAIN_DISTILL_CLAUDE_BIN = stub ? stub.bin : join(ROOT, 'missing-claude');
-  e.BRAIN_DISTILL_GEMINI_BIN = join(ROOT, 'missing-gemini');
   e.BRAIN_DISTILL_CODEX_BIN = join(ROOT, 'missing-codex');
   e.BRAIN_DISTILL_AGY_BIN = join(ROOT, 'missing-agy');
   e.PATH = join(ROOT, 'empty-path');

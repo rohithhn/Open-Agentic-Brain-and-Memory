@@ -28,10 +28,15 @@ exec 2>/dev/null
 REPO="${CLAUDE_BRAIN_DIR:-}"
 if [ -z "$REPO" ]; then
   # Prefer the repo this script actually lives in; fall back to the documented
-  # default so a copied-out hook still works.
+  # default (~/agentic-brain, else the legacy ~/Documents/Brain-claude-mem from
+  # installs made before the default changed) so a copied-out hook still works.
   SELF_DIR="$(cd "$(dirname "$0")" 2>/dev/null && pwd -P)" || SELF_DIR=""
   [ -n "$SELF_DIR" ] && REPO="$(dirname "$SELF_DIR")"
-  [ -f "$REPO/bin/lib/sessionstart.mjs" ] || REPO="$HOME/Documents/Brain-claude-mem"
+  if [ ! -f "$REPO/bin/lib/sessionstart.mjs" ]; then
+    REPO="$HOME/agentic-brain"
+    [ ! -f "$REPO/bin/brain.mjs" ] && [ -f "$HOME/Documents/Brain-claude-mem/bin/brain.mjs" ] \
+      && REPO="$HOME/Documents/Brain-claude-mem"
+  fi
 fi
 RENDERER="$REPO/bin/lib/sessionstart.mjs"
 [ -f "$RENDERER" ] || exit 0

@@ -137,7 +137,7 @@ eq(platformSourceFor('ChatGPT'), 'chatgpt_desktop', 'ChatGPT → chatgpt_desktop
 eq(platformSourceFor('chatgpt-desktop (claude-compatible)'), 'chatgpt_desktop', 'chatgpt wins over claude');
 eq(platformSourceFor('codex-cli'), 'codex', 'codex-cli → codex');
 eq(platformSourceFor('Cursor'), 'cursor', 'Cursor → cursor');
-eq(platformSourceFor('gemini-cli'), 'gemini', 'gemini-cli → gemini');
+eq(platformSourceFor('gemini-cli-mcp-client'), 'mcp_gemini_cli_mcp_client', 'Gemini CLI is unsupported: no gemini bucket');
 eq(platformSourceFor('Antigravity'), 'antigravity', 'Antigravity → antigravity');
 eq(platformSourceFor('Some New Client 2.0'), 'mcp_some_new_client_2_0', 'unknown client → mcp_<sanitized>');
 eq(platformSourceFor(''), 'mcp_unknown', 'missing client name → mcp_unknown');

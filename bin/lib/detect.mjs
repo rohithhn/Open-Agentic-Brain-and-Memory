@@ -11,14 +11,6 @@ import { kiloDataDir, kiloHostGroupInstalled } from './kilo.mjs';
 const HOME = homedir();
 const h = (...p) => join(HOME, ...p);
 
-// Gemini CLI and Antigravity CLI both live under ~/.gemini/, so that dir's
-// mere existence proves nothing about which (if either) product is actually
-// installed (docs/specs/gemini-antigravity-split.md). `markers` are
-// product-specific artifacts a row's `detect()` keys on instead. Gemini CLI
-// never gets these files written by Antigravity (verified: zero `strings`
-// hits in the agy binary), so their presence is a truthful discriminator.
-const GEMINI_MARKERS = [h('.gemini', 'oauth_creds.json'), h('.gemini', 'google_accounts.json')];
-
 // Registry of known tools. `data` = where sessions/history live; `sessions` =
 // subpath we count for a rough session/chat number; `sync` = lightweight globs
 // worth backing up (configs + session logs, NOT model/blob caches); `markers`
@@ -33,23 +25,13 @@ export const TOOLS = [
   { id: 'claude_vscode', name: 'Claude in VS Code', kind: 'ide', paths: [appSupportDir('Code', 'User')], sessions: '', sync: [] },
   { id: 'claude_mem', name: 'claude-mem', kind: 'memory', paths: [h('.claude-mem')], sessions: '', sync: ['settings.json'] },
   { id: 'codex', name: 'OpenAI Codex', kind: 'cli', paths: [h('.codex')], sessions: 'sessions', sync: ['config.toml', 'config.json'] },
-  // Gemini CLI owns the ~/.gemini ROOT files (settings.json, oauth_creds.json,
-  // tmp/, history/) — NOT ~/.gemini/config or ~/.gemini/antigravity-cli,
-  // which belong to Antigravity CLI (see below). Because Antigravity
-  // guarantees ~/.gemini/ exists, detection must key on Gemini-CLI-specific
-  // markers or the `gemini` binary, never on ~/.gemini/ alone.
-  {
-    id: 'gemini', name: 'Gemini CLI (gemini)', kind: 'cli',
-    paths: [h('.gemini'), h('.config', 'gemini-cli')],
-    sessions: 'tmp', sync: ['settings.json', 'oauth_creds.json'],
-    markers: GEMINI_MARKERS,
-    detect: () => GEMINI_MARKERS.some(existsSync) || binOnPath('gemini'),
-  },
   // Antigravity CLI is the Go binary ~/.local/bin/agy. It owns
   // ~/.gemini/config/ and ~/.gemini/antigravity-cli/ (history.jsonl,
   // conversations/, mcp/) — NOT ~/.antigravity/, which is the separate
   // Antigravity IDE (see antigravity_ide below). Sessions are the per-
-  // conversation .db files under antigravity-cli/conversations/.
+  // conversation .db files under antigravity-cli/conversations/. Google's
+  // separate `gemini` CLI (the ~/.gemini root files) is not a supported tool,
+  // so this row keys on ~/.gemini/antigravity-cli, never on ~/.gemini/ alone.
   { id: 'antigravity', name: 'Antigravity CLI (agy)', kind: 'cli', paths: [h('.gemini', 'antigravity-cli')], sessions: 'conversations', sync: [] },
   // Antigravity IDE: a VS Code fork's user dir (argv.json, extensions/).
   // Detect-only — it is never a wiring target (no MCP config of its own to
@@ -96,7 +78,7 @@ export function scanTool(t) {
   const path = t.paths.find((p) => existsSync(p)) || t.paths[0];
   // Default rule: detected iff any of paths[] exists. A row may override with
   // a pure `detect(): boolean` when the parent dir is shared with another
-  // product and its mere existence would false-positive (see GEMINI_MARKERS
+  // product and its mere existence would false-positive (e.g. `kilo`
   // above) — mirrors wire-targets.mjs's `detectedTargets()` predicate style.
   const detected = typeof t.detect === 'function' ? !!t.detect() : t.paths.some((p) => existsSync(p));
   if (!detected) return { ...t, path, detected: false };

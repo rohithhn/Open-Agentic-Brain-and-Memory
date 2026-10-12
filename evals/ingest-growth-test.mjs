@@ -224,7 +224,7 @@ function stubEnv(bin) {
   return {
     ...process.env,
     BRAIN_DISTILL_CLAUDE_BIN: bin,
-    BRAIN_DISTILL_GEMINI_BIN: join(ROOT, 'missing'), BRAIN_DISTILL_CODEX_BIN: join(ROOT, 'missing'),
+    BRAIN_DISTILL_CODEX_BIN: join(ROOT, 'missing'),
     BRAIN_DISTILL_AGY_BIN: join(ROOT, 'missing'),
     PATH: join(ROOT, 'empty-path'), HOME: join(ROOT, 'distill-home'),
   };

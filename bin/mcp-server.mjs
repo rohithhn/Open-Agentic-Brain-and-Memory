@@ -247,7 +247,7 @@ function maybePrewarm() {
 // Sources whose sessions are captured from transcript files on disk by
 // bin/lib/ingest.mjs. Anything NOT in this set — the desktop apps, and any
 // unrecognised MCP client — has no capture channel at all.
-const SELF_CAPTURING = new Set(['claude', 'claude_code', 'codex', 'cursor', 'gemini', 'antigravity', 'kilo']);
+const SELF_CAPTURING = new Set(['claude', 'claude_code', 'codex', 'cursor', 'antigravity', 'kilo']);
 
 function instructionsFor(source) {
   const shared =

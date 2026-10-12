@@ -268,7 +268,6 @@ const PLATFORM_EXACT = new Map([
   ['claude code', 'claude_code'],
   ['codex-mcp-client', 'codex'],
   ['codex-cli', 'codex'],
-  ['gemini-cli-mcp-client', 'gemini'],
   // Kilo's MCP client (packages/opencode/src/mcp/index.ts) announces itself as plain "kilo".
   ['kilo', 'kilo'],
 ]);
@@ -285,7 +284,6 @@ const PLATFORM_MATCHERS = [
   ['codex', 'codex'],
   ['cursor', 'cursor'],
   ['antigravity', 'antigravity'],
-  ['gemini', 'gemini'],
   ['kilo', 'kilo'],
 ];
 

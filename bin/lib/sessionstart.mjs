@@ -119,8 +119,8 @@ const fmtNum = (n) => Number(n).toLocaleString('en-US');
 
 /**
  * cwd -> project name. The store's `project` column holds bare basenames
- * (`Brain-claude-mem`), sometimes with a subagent suffix
- * (`Brain-claude-mem/agent-a994bc41`). A session opened three directories deep
+ * (`my-app`), sometimes with a subagent suffix
+ * (`my-app/agent-a994bc41`). A session opened three directories deep
  * inside a repo should still resolve to the repo, so walk up to the nearest
  * .git before falling back to the basename of cwd itself.
  */

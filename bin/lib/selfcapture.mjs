@@ -13,7 +13,7 @@
 // Two independent signals; either one alone marks a session as ours:
 //   1. WHERE it ran. Every internal run starts in selfRunDir(), and every CLI
 //      records its cwd in the transcript (Claude Code on each line, Codex in
-//      session_meta, agy as `workspace`, Gemini via projects.json).
+//      session_meta, agy as `workspace`).
 //   2. WHAT it was asked. A session whose FIRST user prompt is one of our
 //      internal prompts is ours wherever it ran — this is what catches the
 //      historical rows, which predate the dedicated cwd.

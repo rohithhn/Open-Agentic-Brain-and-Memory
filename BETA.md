@@ -125,8 +125,8 @@ rm -rf ~/.agentic-brain     # MCP bridge home
 rm -rf ~/.claude-brain      # local store (brain.db), logs, Linux fallback secrets file
 ```
 
-Then delete the folder the installer cloned into (the installer prints it; `CLAUDE_BRAIN_DIR`
-overrides it).
+Then delete the folder the installer cloned into: `~/agentic-brain` by default (the installer
+prints it; `CLAUDE_BRAIN_DIR` overrides it).
 
 **5. Remove the key: last, and only if you never want the data back.**
 

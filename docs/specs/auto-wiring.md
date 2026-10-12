@@ -1,4 +1,6 @@
 > Historical design note. It explains why the code is shaped the way it is; details may be out of date — the code and README are authoritative.
+>
+> **Update:** Google's separate Gemini CLI (`~/.gemini/settings.json`) is **no longer a supported target** — its registry row, detection, ingest and distiller provider were removed. Antigravity CLI (`agy`, which stores its data under `~/.gemini/config` and `~/.gemini/antigravity-cli`) is the supported product. An `agentic-brain` entry an older version left in `~/.gemini/settings.json` is harmless and is not migrated.
 
 # Spec — Auto-wiring: every AI tool wired to the brain by one command
 
@@ -31,7 +33,7 @@ Two mechanisms, one registry, one indirection:
   app auto-loads a local instructions file — do not fake one).
 - **Pull** (model searches on demand): register the `claude-mem` MCP server in each tool's MCP config.
   Today `wireMcp()` hardcodes two targets; it becomes **registry-driven** (§3) and gains Claude Desktop,
-  Cursor, and Gemini CLI.
+  and Cursor.
 - **Indirection** (§2): tool configs never embed the repo path; they point at a stable shim.
 
 ## 2. The absolute-path problem — stable shim, decided
@@ -64,7 +66,6 @@ target on its **tool dir existing** (not the config file — absent file in a pr
 | Claude Code ×3 profiles | `~/.claude`, `~/.claude-work`, `~/.claude-personal` | `~/.claude.json` / `<profile dir>/.claude.json` → `mcpServers` (JSON) — the user-scope file `claude mcp add --scope user` writes; **not** `.claude/.mcp.json` (never loaded). Was wrongly "verify only" until 2026-09-28, so no Claude Code session had `brain_recall` | `CLAUDE.md` per profile ✅ exists | next session |
 | Codex CLI + **Codex app** + **ChatGPT desktop** | `~/.codex` | `~/.codex/config.toml` (TOML) — one entry serves all three | `~/.codex/AGENTS.md` ✅ exists (Codex only; ChatGPT ignores it) | CLI/app: next launch; ChatGPT: quit+reopen |
 | Antigravity (agy) | `~/.gemini/config` | `~/.gemini/config/mcp_config.json` (JSON) ✅ exists | `~/.gemini/GEMINI.md` ✅ exists | next launch |
-| Gemini CLI | `~/.gemini` | `~/.gemini/settings.json` → `mcpServers` (JSON) — **new**; verified no such key today, documented location | shares `GEMINI.md` | next launch |
 | Cursor | `~/.cursor` | `~/.cursor/mcp.json` (JSON) — **new**; verified on disk: `mcpServers` map, 3 servers, no claude-mem | per-repo `AGENTS.md` via `injectFolder()` only; **no global push** (Rules-for-AI live in Cursor's own DB — never touch) | reload window / restart |
 | Claude Desktop | `~/Library/Application Support/Claude` | `claude_desktop_config.json` (JSON) — **new**; automates today's manual 11→12 edit | none exists — do not fake | **yes, quit+reopen** |
 
@@ -103,7 +104,6 @@ Claude Code          native    ✅ injected        ✅ added (~/.claude.json) �
 Claude Code (work)   native    ✅ injected        ✅ added (~/.claude-work/.claude.json) — new session to load
 Codex / ChatGPT app  watcher   ✅ injected        ✅ already wired (~/.codex/config.toml)
 Antigravity (agy)    watcher   ✅ injected        ✅ already wired
-Gemini CLI           —         ✅ shared          ✅ added (~/.gemini/settings.json) — restart to load
 Cursor               timer     per-repo only     ✅ added (~/.cursor/mcp.json) — restart to load
 Claude Desktop       ❌ n/a    ❌ n/a             ✅ added (12 servers: 11 kept + 1) — restart app
 ```
@@ -156,7 +156,7 @@ WARNs, not FAILs (brain-init §5 tone: empty is expected, not broken).
 |---|---|---|---|
 | Claude Code (all profiles) | ✅ automatic | ✅ | ✅ |
 | Codex CLI / Codex app | ✅ automatic | ✅ | ✅ |
-| Antigravity / Gemini CLI | ✅ automatic | ✅ | ✅ |
+| Antigravity CLI | ✅ automatic | ✅ | ✅ |
 | Cursor | ✅ automatic (timer) | ⚠️ per-repo only | ✅ |
 | Claude Desktop | ❌ chats are server-side (optional: official data-export import) | ❌ no mechanism exists | ✅ |
 | ChatGPT desktop | ❌ local history is encrypted (optional: official data-export import) | ⚠️ manual paste-digest | ✅ via shared `~/.codex/config.toml` |
@@ -190,7 +190,7 @@ JSON. Ship no new target until both are dead.
 | T1 | `wire.mjs` v2 core: registry consumption, hardened `wireJson` (malformed⇒refuse), rewritten line-based `wireToml`, backup+prune policy, semantic already-wired compare, node-path resolution | `bin/lib/wire.mjs` | — |
 | T2 | Stable shim: `bin/templates/bridge-shim.cjs` + install/refresh of `~/.agentic-brain/{engine-path,bridge.cjs}` | `bin/lib/bridgehome.mjs`, `bin/templates/bridge-shim.cjs` | — |
 | T3 | `brain init` + install.sh INIT/RESTORE split + `loadConfig()` fallback (build brain-init.md as written) | `bin/lib/init.mjs`, `install.sh`, `bin/lib/paths.mjs` | — |
-| T4 | Registry data: all six target rows incl. Claude Desktop / Cursor / Gemini CLI | `bin/lib/wire-targets.mjs` (new, data-only) | T1, T2 |
+| T4 | Registry data: all target rows incl. Claude Desktop / Cursor | `bin/lib/wire-targets.mjs` (new, data-only) | T1, T2 |
 | T5 | `brain doctor` per §6 (incl. stdio spawn probe) | `bin/lib/doctor.mjs` (new) | T2, T4 |
 | T6 | `onboard` v2 report table + `doctor`/`init` CLI cases; install.sh already patched by T3 | `bin/brain.mjs` | T1–T5 |
 | T7 | README capability matrix (§7) + dated correction note in `desktop-app-support.md` (§0) | `README.md`, `docs/specs/desktop-app-support.md` | none (content), publish after T6 |

@@ -1,5 +1,5 @@
 // Agents. Summon a role and dispatch it to a backend — either one of YOUR CLIs
-// (Claude / Gemini / Codex) or a hosted model via API (e.g. Nous Research Hermes
+// (Claude / Codex / Antigravity) or a hosted model via API (e.g. Nous Research Hermes
 // on OpenRouter). The prompt is prefixed with relevant memory from your brain, so
 // this doubles as live memory injection into whatever model runs it.
 import { execFileSync } from 'node:child_process';

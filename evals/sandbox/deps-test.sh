@@ -43,8 +43,8 @@ install() { # install <mac> [extra env...]
     SB_GH_LOGIN="u-$(basename "$H")" SB_BIN="$H/bin" SB_SHIMS="$ROOT/shims" SB_NODE="$NODE_BIN" SB_AGE="$AGE_BIN" SB_AGEK="$AGEK_BIN" BRAIN_NO_AUTOMATION=1 BRAIN_SKIP_NPM=1 BRAIN_TEST=1 BRAIN_MODE=init \
     AGENTIC_BRAIN_REPO=OWNER/agentic-brain "$@" bash "$ENG/install.sh" </dev/null
 }
-works() { # works <mac>: the installed brain saves and finds a memory
-  local H="$SB/$1" B="$SB/$1/Documents/Brain-claude-mem/bin/brain.mjs"
+works() { # works <mac> [engine dir under HOME]: the installed brain saves and finds a memory
+  local H="$SB/$1" B="$SB/$1/${2:-agentic-brain}/bin/brain.mjs"
   env -i HOME="$H" PATH="$H/bin:/usr/bin:/bin" TMPDIR="$H/tmp" SB_KEYCHAIN="$H/keychain" BRAIN_TEST=1 \
     node "$B" remember --title "Deps scenario works" --type discovery --project deps --fact "okra quokka" >/dev/null 2>&1 &&
   env -i HOME="$H" PATH="$H/bin:/usr/bin:/bin" TMPDIR="$H/tmp" SB_KEYCHAIN="$H/keychain" BRAIN_TEST=1 \
@@ -68,6 +68,12 @@ works m1 && ok "brain works after install (remember + recall)" || bad "brain wor
 install m1 > "$SB/1b.log" 2>&1; [ $? = 0 ] && ! grep -q "🔧" "$SB/1b.log" && ok "re-run: everything ✅, nothing reinstalled" || bad "re-run is a no-op"
 install m1 BRAIN_MODE= > "$SB/1c.log" 2>&1 && ok "re-run with no mode (curl | bash again) updates in place" || bad "auto-mode re-run" "$(tail -2 "$SB/1c.log" | tr '\n' ' ')"
 echo "     what the user saw:"; grep -E "^   (✅|🔧)" "$SB/1.log" | sed 's/^/     /'
+
+echo; echo "1d) Legacy install folder (~/Documents/Brain-claude-mem, the pre-~/agentic-brain default)"
+mkdir -p "$SB/m1/Documents" && mv "$SB/m1/agentic-brain" "$SB/m1/Documents/Brain-claude-mem"
+install m1 BRAIN_MODE= > "$SB/1d.log" 2>&1 && ok "re-run finds the legacy folder and updates it" || bad "legacy re-run" "$(tail -2 "$SB/1d.log" | tr '\n' ' ')"
+[ ! -e "$SB/m1/agentic-brain" ] && ok "…without cloning a second copy into ~/agentic-brain" || bad "no second clone" "~/agentic-brain was created"
+works m1 Documents/Brain-claude-mem && ok "brain works from the legacy folder" || bad "brain works from the legacy folder"
 
 echo; echo "2) Broken git (no HTTPS helper) + node 20"
 mac m2 yes age gh gitlfs brokengit oldnode
@@ -98,7 +104,7 @@ install m4 SB_GH_NOAUTH=1 > "$SB/4.log" 2>&1; rc=$?
 echo; echo "5) Meaning-based search: the installer fetches the optional embedding library (npm is faked — no network)"
 mac m5a yes node age gh gitlfs; npm_shim m5a ok
 install m5a BRAIN_SKIP_NPM= > "$SB/5a.log" 2>&1 && ok "installer finishes" || bad "installer finishes" "$(tail -2 "$SB/5a.log" | tr '\n' ' ')"
-ENGDIR="$(cd "$SB/m5a/Documents/Brain-claude-mem" 2>/dev/null && pwd -P)"
+ENGDIR="$(cd "$SB/m5a/agentic-brain" 2>/dev/null && pwd -P)"
 grep -q -- "install --omit=dev" "$SB/m5a.npm" 2>/dev/null && ok "ran npm install --omit=dev" || bad "ran npm install --omit=dev" "$(cat "$SB/m5a.npm" 2>/dev/null)"
 grep -q "^$ENGDIR :: " "$SB/m5a.npm" 2>/dev/null && ok "…inside the engine dir" || bad "…inside the engine dir" "want $ENGDIR, got $(cut -d' ' -f1 "$SB/m5a.npm" 2>/dev/null | tr '\n' ' ')"
 works m5a && ok "brain works" || bad "brain works"

@@ -285,7 +285,7 @@ export async function doSync() {
     if (r.ok && r.linked) log(`  🎓 linked ${r.linked} skill(s) into other tools`);
   } catch (e) { log('  skill link skipped: ' + e.message); }
 
-  log('🔌 ingest linked tools (codex / gemini / …)');
+  log('🔌 ingest linked tools (codex / antigravity / …)');
   try { await ingest({ log }); } catch (e) { log('  ingest skipped: ' + e.message); }
 
   // Once the native store is live, claude-mem keeps distilling into ITS database.
@@ -485,7 +485,7 @@ Commands:
   distill               draft learnings from resolved-struggle episodes (--dry, --since <hours>)
   skills [status|--apply]  make one skill library callable from every tool (--relink, --json)
   distill-sessions      turn captured sessions into observations with our own LLM distiller
-                        [--limit <n>] [--concurrency <n>] [--provider <claude|gemini|codex|agy>]
+                        [--limit <n>] [--concurrency <n>] [--provider <claude|codex|agy>]
                         [--model <m>] [--critique] [--dry-run] [--json]
   eval                  score retrieval against evals/questions.jsonl (--no-wiki, --bm25;
                         --verify: read-only check that every question is answerable)
@@ -698,7 +698,7 @@ async function main() {
       // Our own distiller: captured sessions -> observations. This is the job
       // claude-mem used to do; wiring it here is what lets the plugin be turned
       // off without the store going quiet. Provider is chosen per session from
-      // the CLI that produced it (claude->haiku, gemini->flash, ...) and falls
+      // the CLI that produced it (claude->haiku, agy->flash, ...) and falls
       // back down FALLBACK_CHAIN when one is missing or errors.
       if (rest.includes('--install') || rest.includes('--uninstall')) {
         const { installDistill, uninstallDistill } = await import('./lib/distill-schedule.mjs');
@@ -1242,7 +1242,7 @@ async function main() {
         log('\n5c) auto-capture Cursor sessions (launchd timer)');
         try { installIngest({ log }); } catch (e) { log('   ingest timer skipped: ' + e.message); }
         // Without this, captured sessions never become memories: ingest stores the
-        // raw sessions, the distiller (Claude/Codex/Gemini CLI, whichever is here)
+        // raw sessions, the distiller (Claude/Codex/Antigravity CLI, whichever is here)
         // turns them into observations. It used to be a manual opt-in, so a new
         // machine silently captured transcripts and grew no memories.
         log('\n5c+) turn captured sessions into memories (distiller, launchd timer)');

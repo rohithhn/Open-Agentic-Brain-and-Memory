@@ -11,8 +11,9 @@
 //
 // The token source is whichever agent CLI the user already has installed *for
 // the tool that produced the session*: a Claude Code session is distilled by
-// `claude`, a Gemini CLI session by `gemini`, a Codex session by `codex exec`,
-// an Antigravity session by `agy`. That reuses the auth they already have per
+// `claude`, a Codex session by `codex exec`, an Antigravity session by `agy`.
+// (Google's separate `gemini` CLI is not a supported tool: it is neither
+// ingested nor used as a distiller.) That reuses the auth they already have per
 // tool, spreads cost across providers, and means no single vendor is a
 // dependency — the whole objective. See PROVIDERS below.
 //
@@ -117,8 +118,8 @@ export const estimateTokens = (s) => Math.ceil(String(s ?? '').length / 4);
 // the bare name would recurse into our own launcher.
 //
 // Each provider's `invoke(prompt, model)` returns { args, input }: `input` is
-// written to the child's stdin and closed; `args` may embed the prompt instead
-// (gemini takes it as an argv value). All providers get the SAME prompt and are
+// written to the child's stdin and closed; `args` may embed the prompt instead.
+// All providers get the SAME prompt and are
 // held to the SAME strict JSON contract — no per-provider prompt forks.
 export const PROVIDERS = {
   claude: {
@@ -131,21 +132,6 @@ export const PROVIDERS = {
     invoke: (prompt, model) => ({
       args: ['-p', '--output-format', 'text', ...(model ? ['--model', model] : [])],
       input: prompt,
-    }),
-  },
-  gemini: {
-    id: 'gemini',
-    bin: 'gemini',
-    envBin: 'BRAIN_DISTILL_GEMINI_BIN',
-    envModel: 'BRAIN_DISTILL_GEMINI_MODEL',
-    // Flash-class by default (cheap tier). Overridable — model ids move faster
-    // than this file does, and an unknown id degrades cleanly (see below).
-    defaultModel: 'gemini-2.5-flash',
-    candidates: ['/opt/homebrew/bin/gemini', '/usr/local/bin/gemini', '~/.local/bin/gemini'],
-    // `-p/--prompt` IS gemini's documented non-interactive mode.
-    invoke: (prompt, model) => ({
-      args: ['-p', prompt, ...(model ? ['-m', model] : [])],
-      input: '',
     }),
   },
   codex: {
@@ -200,7 +186,6 @@ export const SOURCE_PROVIDER = {
   claude_vscode: 'claude',
   codex: 'codex',
   chatgpt_desktop: 'codex',
-  gemini: 'gemini',
   antigravity: 'agy',
   // Cursor ships no headless agent CLI of its own that we can rely on, so its
   // sessions take the default chain.
@@ -214,7 +199,7 @@ export const SOURCE_PROVIDER = {
 // Order tried when a session's own CLI is unavailable. Cheapest/most likely
 // installed first. A session is never left undistilled just because its own
 // vendor's CLI is missing — but the row records who actually did the work.
-export const FALLBACK_CHAIN = ['claude', 'gemini', 'agy', 'codex'];
+export const FALLBACK_CHAIN = ['claude', 'agy', 'codex'];
 
 export function providerForSource(platformSource) {
   const key = String(platformSource || '').toLowerCase();

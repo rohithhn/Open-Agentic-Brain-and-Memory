@@ -7,7 +7,7 @@
 // template in the repo, not this copy — the next onboard overwrites it.
 //
 // WHY IT EXISTS
-// Every tool's MCP config (Codex TOML, Claude Desktop JSON, Cursor, Gemini …)
+// Every tool's MCP config (Codex TOML, Claude Desktop JSON, Cursor, Antigravity …)
 // must name an absolute path to a stdio server. Pointing them straight at the
 // clone bakes one user's checkout path into their config: move or rename the
 // clone and every tool silently gets a dead MCP server. So configs point HERE

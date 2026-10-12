@@ -313,7 +313,7 @@ async function loadHome(){
     enter(ls.firstElementChild||ls);
 
     const cap=hl.capture||{}, wa=hl.watchAgy||{}, wk=hl.worker||{}, sy=hl.sync||{};
-    const srcOrder=['claude','codex','antigravity','gemini'];
+    const srcOrder=['claude','codex','antigravity','kilo'];
     const srcLine=srcOrder.filter(k=>cap.sources&&cap.sources[k]).map(k=>`${k} ${ago(cap.sources[k].ageMs)}`).join(' · ')||'no sources yet';
     const capLine=cap.lastObs?`Last observation ${ago(cap.ageMs)} ago · <span class="dim">${esc(srcLine)}</span>`:'No observations yet';
     const waLine=wa.state==='ok'?'Running':wa.state==='red'?'Stopped. Restart with <span class="mono">brain watch-agy --install</span>':'Not installed';
@@ -466,7 +466,7 @@ async function loadTools(){
       <div class="th"><b>${esc(t.name)}</b>${t.detected?`<button class="switch" role="switch" aria-checked="${on}" aria-label="Link ${escAttr(t.name)}" onclick="toggleTool('${qa(t.id)}')"></button>`:'<span class="badge no">not found</span>'}</div>
       <div class="meta">${t.detected?`<span class="badge det">detected</span>${t.sessions?('<span>'+t.sessions+' sessions</span>'):''}${t.lastActive?('<span class="dim">'+t.lastActive.slice(0,10)+'</span>'):''}`:'&nbsp;'}</div>
       <div class="path">${esc(t.path||'')}</div></div>`;
-  }).join('')||emptyState('plug','No tools found','Install Claude Code, Codex, Cursor or Gemini CLI.');
+  }).join('')||emptyState('plug','No tools found','Install Claude Code, Codex, Cursor or Antigravity CLI.');
   enter(tg);
   $('#keygrid').innerHTML=d.keys.length?d.keys.map(k=>`<span style="display:inline-flex;margin:0 6px 6px 0">${k.present?stPill('ok','check-circle',k.name):stPill('off','minus-circle',k.name)}</span>`).join('')
     :'<span class="muted">No provider keys found in your shell environment.</span>';
@@ -854,7 +854,7 @@ const WIZ=(()=>{
     return c.imported?`<div class="row" style="margin-top:14px;gap:8px;align-items:center">${stPill('ok','check-circle','claude-mem imported')}<span class="muted">${n(c.observations)} memories brought over.</span></div>`
       :`<div style="margin-top:14px"><p style="margin:0 0 8px">claude-mem found with <b>${n(c.observations)}</b> memories. Bring them over instantly (undo any time):</p>${cmdChip('brain switch-from-claude-mem --apply')}</div>`;};
   const steps=[
-    {t:'Welcome',render:()=>`${h('brain','Welcome to your Agentic Brain')}<p class="muted">One memory shared by all your AI tools, kept on your computer, encrypted, and backed up to your own private GitHub.</p>${kvs([['1. Find your tools','Claude Code, Codex, Cursor, Gemini, Antigravity, Kilo Code and more'],['2. Read your past sessions','already started by the installer'],['3. Build memories','in the background, a little every 15 minutes'],['4. Encrypt and sync','to your own GitHub, once a day']])}<p class="muted" style="font-size:12px;margin-top:12px">The installer did most of this already. These steps show you what it found.</p>`},
+    {t:'Welcome',render:()=>`${h('brain','Welcome to your Agentic Brain')}<p class="muted">One memory shared by all your AI tools, kept on your computer, encrypted, and backed up to your own private GitHub.</p>${kvs([['1. Find your tools','Claude Code, Codex, Cursor, Antigravity, Kilo Code and more'],['2. Read your past sessions','already started by the installer'],['3. Build memories','in the background, a little every 15 minutes'],['4. Encrypt and sync','to your own GitHub, once a day']])}<p class="muted" style="font-size:12px;margin-top:12px">The installer did most of this already. These steps show you what it found.</p>`},
     {t:'Your tools',render:()=>{const f=found();return `${h('plug','We found these on your machine')}<div class="muted" style="margin-bottom:12px">${f.length} tool${f.length===1?'':'s'} found · all connected by default (turn any off on the Tools page)</div>${f.length?`<div class="skgrid">${f.map(t=>`<div class="tool on" style="padding:11px 13px"><div class="th"><b style="font-size:13px">${esc(t.name)}</b>${stPill('ok','check','connected')}</div>${t.id==='kilo'?'<div class="meta">beta: VS Code, Cursor and the Kilo CLI</div>':''}</div>`).join('')}</div>`:emptyState('plug','No AI tools found yet','Install one, then run brain onboard again.')}<p class="muted" style="font-size:12px;margin-top:12px">Kilo Code is supported in beta, in VS Code, in Cursor and as the Kilo CLI.</p>`;}},
     {t:'Where data lives',render:()=>`${h('folder','Where your tools keep their history')}<p class="muted">Read-only: the brain never changes these files.</p><div class="tx"><table><thead><tr><th>Tool</th><th>Path</th></tr></thead><tbody>${found().map(t=>`<tr><td>${esc(t.name)}</td><td class="mono">${esc(t.path)}</td></tr>`).join('')}</tbody></table></div>`},
     {t:'Your history',render:()=>`${h('database','Your past sessions')}${history()}${cmBlock()}`},

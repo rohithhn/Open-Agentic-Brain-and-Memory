@@ -82,7 +82,7 @@ await t('cwd: self-run dir matched by suffix on any home; project-dir slug match
   assert(!isSelfRunCwd('/Users/a/code/self-runs'), 'lookalike');
   assert(!isSelfRunCwd(undefined), 'undefined');
   assert(isSelfRunProjectDir('-Users-a--claude-brain-self-runs'), 'slug');
-  assert(!isSelfRunProjectDir('-Users-a-Documents-Brain-claude-mem'), 'real slug');
+  assert(!isSelfRunProjectDir('-Users-a-Documents-my-app'), 'real slug');
   const d = ensureSelfRunDir(join(ROOT, 'h-ensure'));
   assert(existsSync(d) && statSync(d).isDirectory(), 'ensureSelfRunDir creates it');
 });

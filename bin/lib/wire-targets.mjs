@@ -6,13 +6,10 @@
 // Every path here was verified read-only against a real machine on 2026-08-06
 // (see the task report for the raw `ls`/`node -e` output). Where the spec's
 // narrative table and disk reality disagreed, disk reality won:
-//   - `~/.gemini/settings.json` exists but has NO `mcpServers` key today — the
-//     "new" Gemini CLI row is confirmed absent, matching the spec.
 //   - `~/.cursor/mcp.json` exists with 3rd-party servers (Figma x2,
 //     local-storybook) and no claude-mem entry — confirmed "new" per spec.
-//   - `~/.gemini/GEMINI.md` exists and IS the shared push target for both
-//     Antigravity and Gemini CLI (confirmed against bin/lib/inject.mjs's own
-//     TOOLS registry, which already encodes this sharing).
+//   - `~/.gemini/GEMINI.md` is Antigravity CLI's global instructions file
+//     (the push target; matches bin/lib/inject.mjs's TOOLS registry).
 //   - Claude Code's "pull" is an ordinary user-scope MCP entry. Claude Code
 //     reads user-scope servers from `mcpServers` in `<config dir>/.claude.json`
 //     (~/.claude.json for the default profile; CLAUDE_CONFIG_DIR/.claude.json
@@ -26,25 +23,17 @@
 //     about pull, which is wired like every other tool. Detection gates on
 //     the profile dir (~/.claude etc.) because dirname(~/.claude.json) is $HOME.
 //
-// Two rows share the ~/.gemini home and MUST NOT be confused (see
-// docs/specs/gemini-antigravity-split.md):
-//   - `antigravity`  = Antigravity CLI, the Go binary ~/.local/bin/agy. Owns
-//     ~/.gemini/config/ and ~/.gemini/antigravity-cli/. NOT ~/.antigravity/
-//     (that dir is the Antigravity IDE, a stale VS Code fork — detect-only,
-//     never a wiring target, so it has no row here).
-//   - `gemini_cli`   = Google's `gemini` terminal CLI (npm @google/gemini-cli).
-//     Owns the ~/.gemini root files: settings.json, oauth_creds.json, tmp/,
-//     history/.
-// Because Antigravity guarantees ~/.gemini/ exists, `gemini_cli` MUST NOT be
-// detected by its config's parent dir — hence the per-row `detect()` below.
+// `antigravity` = Antigravity CLI, the Go binary ~/.local/bin/agy. It stores
+// its data under ~/.gemini/ (~/.gemini/config/ and ~/.gemini/antigravity-cli/).
+// NOT ~/.antigravity/ (that dir is the Antigravity IDE, a stale VS Code fork —
+// detect-only, never a wiring target, so it has no row here).
 //
-// SHARED PUSH FILE (normative for consumers): `antigravity` and `gemini_cli`
-// both resolve push.file() to ~/.gemini/GEMINI.md, because both products read
-// that one global instructions file. When two detected targets resolve
-// push.file() to the same path, the writer must WRITE ONCE and REPORT BOTH —
-// the second row reports `shared` rather than performing a second write.
-// Read-only checkers (doctor's checkPush) may re-check the same path; that is
-// idempotent and fine.
+// Google's separate `gemini` terminal CLI (~/.gemini/settings.json) is NOT a
+// supported target. Earlier versions had a `gemini_cli` row; it was removed.
+// An `agentic-brain` entry an older version left in ~/.gemini/settings.json is
+// harmless and is deliberately not migrated. Because ~/.gemini/ is shared with
+// that product, Antigravity detection keys on ~/.gemini/config/, never on
+// ~/.gemini/ alone (see the per-row `detect()` below).
 import { existsSync, statSync } from 'node:fs';
 import { delimiter, dirname, isAbsolute, join } from 'node:path';
 import { homedir } from 'node:os';
@@ -213,31 +202,12 @@ export const TARGETS = [
     serversKey: 'mcpServers',
     capture: 'watcher',
     // Default parent-dir gate, stated explicitly because it is load-bearing:
-    // only agy creates ~/.gemini/config/ (Gemini CLI's storage layout has no
-    // such subdir), so this cannot false-positive on a Gemini-CLI-only machine.
+    // only agy creates ~/.gemini/config/ (Google's separate gemini CLI has no
+    // such subdir), so this cannot false-positive on a gemini-CLI-only machine.
     detect: () => existsSync(h('.gemini', 'config')),
     push: { file: () => h('.gemini', 'GEMINI.md') },
     restart: 'restart-app',
-    notes: "Google's agy agent CLI (Go binary, ~/.local/bin/agy). Owns ~/.gemini/config/ + ~/.gemini/antigravity-cli/ — NOT ~/.antigravity/ (that is the Antigravity IDE, a separate product and not a wiring target). Already wired today (mcpServers has figma, figma-dev-mode-mcp-server, claude-mem). Shares the ~/.gemini/GEMINI.md push file with Gemini CLI — write once, report both.",
-  },
-  {
-    id: 'gemini_cli',
-    name: 'Gemini CLI (gemini)',
-    format: 'json',
-    configPath: () => h('.gemini', 'settings.json'),
-    serversKey: 'mcpServers',
-    capture: 'ingest',
-    // NEVER gate on ~/.gemini/ itself: Antigravity guarantees that dir exists,
-    // which would wire claude-mem into settings.json on machines with no Gemini
-    // CLI at all. Credential markers first (Antigravity writes neither, and
-    // they survive a thin GUI PATH), then a pure-fs PATH scan for the binary.
-    detect: () =>
-      existsSync(h('.gemini', 'oauth_creds.json')) ||
-      existsSync(h('.gemini', 'google_accounts.json')) ||
-      binOnPath('gemini'),
-    push: { file: () => h('.gemini', 'GEMINI.md') },
-    restart: 'next-launch',
-    notes: "Google's gemini terminal CLI (npm @google/gemini-cli). Owns the ~/.gemini root files (settings.json, oauth_creds.json, tmp/, history/); sessions are ingested from ~/.gemini/tmp. Detected by the gemini binary or oauth_creds.json/google_accounts.json — NEVER by ~/.gemini/ alone (Antigravity guarantees that dir exists). Shares the ~/.gemini/GEMINI.md push file with Antigravity CLI — write once, report both.",
+    notes: "Google's agy agent CLI (Go binary, ~/.local/bin/agy). Owns ~/.gemini/config/ + ~/.gemini/antigravity-cli/ — NOT ~/.antigravity/ (that is the Antigravity IDE, a separate product and not a wiring target). Already wired today (mcpServers has figma, figma-dev-mode-mcp-server, claude-mem). Pushes into ~/.gemini/GEMINI.md, which agy auto-loads.",
   },
   {
     id: 'cursor',

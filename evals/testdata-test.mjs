@@ -275,7 +275,7 @@ await t('patterns: the fixture shapes seen in a real store match, by the expecte
   assert(!isAutoTestDataProject('app') && !isAutoTestDataProject(null), 'non-fixtures');
 });
 await t('patterns: real and merely test-ish project names never match (conservative)', () => {
-  for (const name of ['Brain-claude-mem', 'alexmorgan', 'tmp', 'beta', 'components', 'home', 'scratchpad',
+  for (const name of ['my-claude-notes', 'alexmorgan', 'tmp', 'beta', 'components', 'home', 'scratchpad',
     'real-claude-test', 'claude-real-run', 'Opendesign', 'brand-product-b5f215', 'od-design-system', 'od-',
     'scratch-2026-01-15-c0ffee', 'Example Testing Platform/agent-a000bc41ae8559cc5',
     'e2e-probe', 'e2e-probe-x', 'my-e2e-probe-001', 'proj-run-context', 'proj-run-context-12345',

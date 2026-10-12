@@ -28,14 +28,12 @@ const END = '<!-- BRAIN:END -->';
 // Confirmed conventions (all encoded as registry `push.file()`):
 //   Claude Code (×3 profiles) → ~/.claude*/CLAUDE.md   (they do NOT share one)
 //   Codex                     → ~/.codex/AGENTS.md
-//   Antigravity CLI (agy)     → ~/.gemini/GEMINI.md
-//   Gemini CLI (gemini)       → ~/.gemini/GEMINI.md  ← SAME FILE, two products
+//   Antigravity CLI (agy)     → ~/.gemini/GEMINI.md  (agy keeps its data under ~/.gemini)
 //
-// That last pair is the reason this module dedupes: both products read one
-// global instructions file (github.com/google-gemini/gemini-cli/issues/16058),
-// so the registry's normative rule is WRITE ONCE, REPORT BOTH. Iterating the
-// registry naively would splice the same file twice per run — churn, and a
-// second run that is no longer a no-op. Grouping happens on the RESOLVED real
+// When two targets resolve to the same push file, the rule is WRITE ONCE,
+// REPORT BOTH. Iterating the registry (or a config.json inject.targets list)
+// naively would splice the same file twice per run — churn, and a second run
+// that is no longer a no-op. Grouping happens on the RESOLVED real
 // path, not the string, so a symlinked equivalence dedupes too.
 // (Project-level Antigravity/Codex read a per-repo AGENTS.md — injectFolder().)
 //
@@ -95,7 +93,7 @@ function pushKey(file) {
 
 // Group targets that write the SAME file into one write unit. A group is
 // "installed" if ANY of its members is; its label names every member the write
-// actually serves (e.g. "Antigravity CLI (agy) + Gemini CLI (gemini)"), so the
+// actually serves (e.g. "Kilo Code (VS Code) + Kilo Code (Cursor)"), so the
 // report under-claims nothing and the file is spliced exactly once.
 function pushGroups(list) {
   const byKey = new Map();
@@ -357,8 +355,7 @@ export function injectContext({ write = false, log = () => {} } = {}) {
   if (!digest) return { ok: false, error: 'No memory DB — nothing to inject.', digest: '', results: [] };
   const results = [];
   // One row per DISTINCT push file, never per registry row: targets sharing a
-  // file (Antigravity CLI + Gemini CLI on ~/.gemini/GEMINI.md) are written once
-  // and reported once, naming both tools. `ids` carries every tool the row
+  // file are written once and reported once, naming every tool served. `ids` carries every tool the row
   // serves for consumers that key off ids rather than labels.
   for (const t of pushGroups(targets())) {
     const base = { id: t.ids[0] ?? null, ids: t.ids, label: t.label, file: t.file, shared: t.shared };

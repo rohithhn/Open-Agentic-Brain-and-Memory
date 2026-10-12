@@ -61,7 +61,7 @@ export function enableClaudeMemEverywhere({ write = false, log = () => {} } = {}
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) { results.push({ profile: p.id, file, action: 'skipped (unparseable settings.json)' }); continue; }
     // Decide from the parsed settings, not a substring: `raw.includes('claude-mem')`
     // also matched `"claude-mem@thedotmack": false` and any hook path containing
-    // the text (e.g. this repo's own ~/Documents/Brain-claude-mem hook).
+    // the text (e.g. a hook under a folder like ~/code/my-claude-mem-notes).
     const state = claudeMemState(obj);
     if (state === 'enabled') { results.push({ profile: p.id, file, action: 'already enabled' }); continue; }
     // The user switched it off on purpose — never override that.

@@ -34,9 +34,6 @@ jobs:
       - name: engine-mirror-test
         run: node evals/engine-mirror-test.mjs
 
-      - name: ingest-gemini-test
-        run: node evals/ingest-gemini-test.mjs
-
       - name: wire-targets-test
         run: node evals/wire-targets-test.mjs
 

@@ -6,7 +6,7 @@
 # recovers by pointer rewrite alone.
 #
 # ── HONESTY: what is real vs stubbed ─────────────────────────────────────────
-#   REAL      : bridge-home install, MCP wiring into 5 config files (JSON+TOML),
+#   REAL      : bridge-home install, MCP wiring into 4 config files (JSON+TOML),
 #               idempotence, brain doctor, repo-move recovery.
 #   STUBBED   : `brain init` (needs a real GitHub repo + age key — never created),
 #               launchd installs (BRAIN_NO_AUTOMATION=1; launchctl acts on the
@@ -76,13 +76,12 @@ JSON
 echo '{ "theme": "dark" }' > "$SANDBOX/.gemini/settings.json"
 echo '{ "mcpServers": { "gsearch": { "command": "node", "args": ["/opt/g.js"] } } }' \
   > "$SANDBOX/.gemini/config/mcp_config.json"
-# gemini-antigravity-split.md §2: gemini_cli.detect() no longer trusts
-# ~/.gemini/ existing alone (Antigravity guarantees that dir). It requires a
-# creds marker or the `gemini` binary on PATH. Seed an EMPTY marker file
-# (never real credentials — the predicate only checks existence) so this
-# sandbox legitimately "has" Gemini CLI and the harness stays portable to a
-# machine without the real gemini binary installed.
+# Google's separate Gemini CLI is NOT a supported target. Seed the files it
+# leaves in the ~/.gemini root (an EMPTY creds marker — never real
+# credentials) so the run proves onboard leaves ~/.gemini/settings.json alone
+# while still wiring Antigravity CLI (~/.gemini/config/mcp_config.json).
 touch "$SANDBOX/.gemini/oauth_creds.json"
+GEMINI_SETTINGS_BEFORE=$(shasum -a 1 "$SANDBOX/.gemini/settings.json" | awk '{print $1}')
 
 cat > "$SANDBOX/Library/Application Support/Claude/claude_desktop_config.json" <<'JSON'
 { "mcpServers": {
@@ -119,8 +118,7 @@ head_ "2. every tool wired to the SHIM path"
 SHIM="$SANDBOX/.agentic-brain/server.cjs"   # wireMcp now writes the MCP server, not the bridge
 for pair in "cursor:$SANDBOX/.cursor/mcp.json" \
             "claude_desktop:$SANDBOX/Library/Application Support/Claude/claude_desktop_config.json" \
-            "gemini_mcp:$SANDBOX/.gemini/config/mcp_config.json" \
-            "gemini_settings:$SANDBOX/.gemini/settings.json"; do
+            "antigravity:$SANDBOX/.gemini/config/mcp_config.json"; do
   name="${pair%%:*}"; file="${pair#*:}"
   args="$(has_json "$file" agentic-brain)"
   case "$args" in
@@ -129,6 +127,10 @@ for pair in "cursor:$SANDBOX/.cursor/mcp.json" \
     *)         bad "$name → wrong path: $args" ;;
   esac
 done
+[ -z "$(has_json "$SANDBOX/.gemini/settings.json" agentic-brain)" ] \
+  && [ "$(shasum -a 1 "$SANDBOX/.gemini/settings.json" | awk '{print $1}')" = "$GEMINI_SETTINGS_BEFORE" ] \
+  && ok "Gemini CLI ~/.gemini/settings.json NOT wired (unsupported; bytes unchanged)" \
+  || bad "Gemini CLI ~/.gemini/settings.json was modified — Gemini CLI is not a supported target"
 grep -q "mcp_servers.agentic-brain" "$SANDBOX/.codex/config.toml" && ok "codex (toml) → agentic-brain block added" \
   || bad "codex (toml) → agentic-brain block missing"
 grep -q "$SHIM" "$SANDBOX/.codex/config.toml" && ok "codex (toml) → shim path" \
@@ -140,8 +142,8 @@ head_ "3. pre-existing servers survived (the critical assertion)"
 [ "$(count_json "$SANDBOX/Library/Application Support/Claude/claude_desktop_config.json")" = "4" ] \
   && ok "claude desktop 3 → 4 (figma, reddit, kite kept)" \
   || bad "claude desktop count = $(count_json "$SANDBOX/Library/Application Support/Claude/claude_desktop_config.json"), expected 4"
-[ "$(count_json "$SANDBOX/.gemini/config/mcp_config.json")" = "2" ] && ok "gemini mcp 1 → 2 (gsearch kept)" \
-  || bad "gemini mcp count wrong"
+[ "$(count_json "$SANDBOX/.gemini/config/mcp_config.json")" = "2" ] && ok "antigravity mcp 1 → 2 (gsearch kept)" \
+  || bad "antigravity mcp count wrong"
 for t in existing_one existing_two; do
   grep -q "\[mcp_servers.$t\]" "$SANDBOX/.codex/config.toml" && ok "codex: $t survived" || bad "codex: $t LOST"
 done
@@ -175,7 +177,7 @@ echo "$DOC" | grep -qiE '"level"\s*:\s*"PASS"' && ok "doctor reports PASS rows" 
 WIRED_NOTREG=$(node -e '
 let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
   let j; try{ j=JSON.parse(s) }catch{ console.log("PARSE_FAIL"); return }
-  const rows=(j.tools||j.rows||[]).filter(r=>["cursor","claude_desktop","gemini_cli","antigravity","codex"].includes(r.id));
+  const rows=(j.tools||j.rows||[]).filter(r=>["cursor","claude_desktop","antigravity","codex"].includes(r.id));
   const bad=rows.filter(r=>/not registered/i.test(JSON.stringify((r.checks&&r.checks.pull)||r.pull||"")));
   console.log(bad.length?bad.map(r=>r.id).join(","):"NONE");
 });' <<<"$DOC")
@@ -197,52 +199,33 @@ CFG_AFTER=$(shasum -a 1 "$SANDBOX/.cursor/mcp.json" | awk '{print $1}')
 [ "$PTR_BEFORE" != "$PTR_AFTER" ] && ok "pointer rewritten to new engine path" || bad "pointer unchanged after move"
 [ "$CFG_BEFORE" = "$CFG_AFTER" ] && ok "tool config untouched by repo move" || bad "repo move rewrote tool config"
 
-head_ "8. negative case — Antigravity present, Gemini CLI marker absent"
-# gemini-antigravity-split.md §2 / H1's sibling requirement: a sandbox with
-# only Antigravity's ~/.gemini/config/ marker and NEITHER creds file must NOT
-# wire gemini_cli. detect() is `existsSync(oauth_creds.json) ||
-# existsSync(google_accounts.json) || binOnPath('gemini')`, and binOnPath()
-# ALWAYS additionally scans /opt/homebrew/bin and /usr/local/bin —
-# unconditionally, by design (bin/lib/wire-targets.mjs EXTRA_BIN_DIRS) — on
-# top of whatever PATH is passed to `brain onboard`. This dev machine has a
-# real `gemini` binary at /opt/homebrew/bin/gemini (verified in
-# gemini-antigravity-split.md §1.1), so on THIS machine onboard would
-# correctly detect that real binary and wire gemini_cli regardless of what
-# the sandbox itself contains — asserting "not wired" here would fail for
-# the right reason, not because of a bug. Rather than assert something we
-# know is false on this machine, we SKIP with an explicit reason, exactly as
-# the H1 spec calls for. On a machine with no `gemini` binary anywhere on
-# PATH or in those two dirs, the assertion runs for real.
-gemini_binary_reachable() {
-  [ -x /opt/homebrew/bin/gemini ] && return 0
-  [ -x /usr/local/bin/gemini ] && return 0
-  PATH="$SCRATCH/stub:$PATH" command -v gemini >/dev/null 2>&1
-}
-if gemini_binary_reachable; then
-  printf '  \033[33mSKIP\033[0m %s\n' \
-    "gemini_cli negative case — this machine has a real 'gemini' binary reachable (PATH or /opt/homebrew/bin or /usr/local/bin); binOnPath() scans those dirs unconditionally by design, so a sandbox alone cannot honestly assert 'not detected' here. See docs/specs/gemini-antigravity-split.md §2."
-else
-  NEGHOME="$SCRATCH/neg-home"
-  mkdir -p "$NEGHOME"/.gemini/config "$NEGHOME"/.claude
-  echo '{ "mcpServers": { "figma-x": { "command": "npx", "args": ["x"] } } }' \
-    > "$NEGHOME/.gemini/config/mcp_config.json"
-  echo '{ "theme": "dark" }' > "$NEGHOME/.gemini/settings.json"
-  env HOME="$NEGHOME" \
-      AGENTIC_BRAIN_HOME="$NEGHOME/.agentic-brain" \
-      BRAIN_NO_AUTOMATION=1 \
-      PATH="$SCRATCH/stub:$PATH" \
-      node "$REPO/bin/brain.mjs" onboard >/dev/null 2>&1
-  NEG_SHIM="$NEGHOME/.agentic-brain/bridge.cjs"
-  NEG_GEMINI_ARGS="$(has_json "$NEGHOME/.gemini/settings.json" claude-mem)"
-  [ -z "$NEG_GEMINI_ARGS" ] && ok "gemini_cli NOT wired when only Antigravity's config/ marker present (no creds, no binary)" \
-    || bad "gemini_cli was wired despite no creds/binary: $NEG_GEMINI_ARGS"
-  NEG_ANTI_ARGS="$(has_json "$NEGHOME/.gemini/config/mcp_config.json" claude-mem)"
-  case "$NEG_ANTI_ARGS" in
-    *"$NEG_SHIM"*) ok "antigravity still wired in negative-case sandbox (config/ present)" ;;
-    *) bad "antigravity should have been wired in negative-case sandbox: $NEG_ANTI_ARGS" ;;
-  esac
-  rm -rf "$NEGHOME"
-fi
+head_ "8. Gemini CLI is never wired — even with its creds and binary present"
+# Gemini CLI is unsupported: no registry row exists, so neither its creds
+# marker nor a `gemini` binary on PATH may cause ~/.gemini/settings.json to be
+# written. Antigravity (~/.gemini/config/) must still be wired. A stub
+# `gemini` binary on PATH makes this deterministic on every machine.
+NEGHOME="$SCRATCH/neg-home"
+mkdir -p "$NEGHOME"/.gemini/config "$NEGHOME"/.claude "$SCRATCH/gstub"
+printf '#!/bin/sh\nexit 0\n' > "$SCRATCH/gstub/gemini"; chmod +x "$SCRATCH/gstub/gemini"
+echo '{ "mcpServers": { "figma-x": { "command": "npx", "args": ["x"] } } }' \
+  > "$NEGHOME/.gemini/config/mcp_config.json"
+echo '{ "theme": "dark" }' > "$NEGHOME/.gemini/settings.json"
+: > "$NEGHOME/.gemini/oauth_creds.json"
+env HOME="$NEGHOME" \
+    AGENTIC_BRAIN_HOME="$NEGHOME/.agentic-brain" \
+    BRAIN_NO_AUTOMATION=1 \
+    PATH="$SCRATCH/gstub:$SCRATCH/stub:$PATH" \
+    node "$REPO/bin/brain.mjs" onboard >/dev/null 2>&1
+NEG_SHIM="$NEGHOME/.agentic-brain/server.cjs"
+NEG_GEMINI_ARGS="$(has_json "$NEGHOME/.gemini/settings.json" agentic-brain)"
+[ -z "$NEG_GEMINI_ARGS" ] && ok "Gemini CLI settings.json NOT wired (creds + binary present)" \
+  || bad "Gemini CLI settings.json was wired: $NEG_GEMINI_ARGS"
+NEG_ANTI_ARGS="$(has_json "$NEGHOME/.gemini/config/mcp_config.json" agentic-brain)"
+case "$NEG_ANTI_ARGS" in
+  *"$NEG_SHIM"*) ok "antigravity still wired alongside Gemini CLI files (config/ present)" ;;
+  *) bad "antigravity should have been wired: $NEG_ANTI_ARGS" ;;
+esac
+rm -rf "$NEGHOME"
 
 head_ "9. REAL machine untouched"
 i=0; REAL_OK=1

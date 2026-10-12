@@ -84,7 +84,7 @@ export function provenanceOf(row) {
   };
 }
 
-/** "claude-code · 2026-09-27 · Brain-claude-mem · bin/brain.mjs" — unknown parts
+/** "claude-code · 2026-09-27 · my-app · bin/brain.mjs" — unknown parts
  *  are dropped, never printed as placeholders. */
 export function formatProvenance(p, { project = true } = {}) {
   return [p.source, p.day, project ? p.project : '', p.file].filter(Boolean).join(' · ');

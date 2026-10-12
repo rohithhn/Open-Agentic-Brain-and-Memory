@@ -787,7 +787,7 @@ pre.term{font:11px/1.6 var(--mono);background:var(--bg);border:1px solid var(--l
               <tr><td>Claude Code</td><td class="c"><i class="ic ok-i" data-i="check" aria-label="yes"></i></td><td><i class="ic ok-i" data-i="check"></i> automatic</td><td><i class="ic ok-i" data-i="check" aria-label="yes"></i></td></tr>
               <tr><td>Codex (CLI &amp; app)</td><td class="c"><i class="ic ok-i" data-i="check" aria-label="yes"></i></td><td><i class="ic ok-i" data-i="check"></i> automatic</td><td class="muted">via AGENTS.md</td></tr>
               <tr><td>Cursor</td><td class="c"><i class="ic ok-i" data-i="check" aria-label="yes"></i></td><td><i class="ic ok-i" data-i="check"></i> automatic</td><td class="dim">n/a</td></tr>
-              <tr><td>Antigravity / Gemini CLI</td><td class="c"><i class="ic ok-i" data-i="check" aria-label="yes"></i></td><td><i class="ic ok-i" data-i="check"></i> automatic</td><td class="muted">via GEMINI.md</td></tr>
+              <tr><td>Antigravity CLI</td><td class="c"><i class="ic ok-i" data-i="check" aria-label="yes"></i></td><td><i class="ic ok-i" data-i="check"></i> automatic</td><td class="muted">via GEMINI.md</td></tr>
               <tr><td>Claude Desktop</td><td class="c"><i class="ic ok-i" data-i="check" aria-label="yes"></i></td><td><i class="ic ok-i" data-i="check"></i> when the AI calls <span class="mono">brain_remember</span></td><td class="dim">n/a</td></tr>
               <tr><td>ChatGPT chat</td><td class="c muted">not yet</td><td class="muted">not yet</td><td class="dim">n/a</td></tr>
             </tbody>
@@ -821,7 +821,7 @@ pre.term{font:11px/1.6 var(--mono);background:var(--bg);border:1px solid var(--l
           <p class="muted" style="font-size:13px">Two properties do all the work: it's <b style="color:var(--text)">typed</b> (filterable, not a wall of text) and <b style="color:var(--text)">compressed</b> (a whole investigation shrinks to a few sentences). That's why looking something up later costs almost nothing. Here's a <b style="color:var(--text)">real one</b> from this repo.</p>
         </div>
         <div class="panel" style="border-left:2px solid var(--red);padding:16px 18px">
-          <div class="row" style="gap:8px;margin-bottom:8px"><span class="st st-fail">bugfix</span><span class="mono" style="color:var(--dim)">Brain-claude-mem · obs #10377</span></div>
+          <div class="row" style="gap:8px;margin-bottom:8px"><span class="st st-fail">bugfix</span><span class="mono" style="color:var(--dim)">my-app · obs #10377</span></div>
           <b style="font-size:14px;display:block;line-height:1.35">Database snapshot before packing to preserve WAL entries</b>
           <p class="muted" style="margin:6px 0 10px;font-size:12.5px">Memory packing now uses VACUUM INTO to capture uncommitted WAL rows before encryption.</p>
           <div class="eyebrow" style="margin-bottom:5px">Facts</div>
@@ -885,7 +885,7 @@ pre.term{font:11px/1.6 var(--mono);background:var(--bg);border:1px solid var(--l
         <p>Five layers on one database. Each is small, deterministic, and verifiable.</p></div></div>
       <div class="panel">
         <div class="layer"><div class="ln" style="color:var(--amber)">01 CAPTURE</div>
-          <div><b style="font-size:13.5px">Claude Code · Codex · Cursor · Antigravity · Gemini CLI (automatic) + Claude Desktop (via <span class="mono">brain_remember</span>)</b><div class="muted" style="font-size:12px">Each tool's sessions are read from disk after the fact, so a capture problem can never break a live session, and deduped on a session id, so nothing double-counts. Chat apps have no readable transcript, so their AI saves what matters with the <span class="mono">brain_remember</span> tool. If you already use claude-mem, its memory imports in.</div></div></div>
+          <div><b style="font-size:13.5px">Claude Code · Codex · Cursor · Antigravity CLI (automatic) + Claude Desktop (via <span class="mono">brain_remember</span>)</b><div class="muted" style="font-size:12px">Each tool's sessions are read from disk after the fact, so a capture problem can never break a live session, and deduped on a session id, so nothing double-counts. Chat apps have no readable transcript, so their AI saves what matters with the <span class="mono">brain_remember</span> tool. If you already use claude-mem, its memory imports in.</div></div></div>
         <div class="sep"><i class="ic" data-i="chevron-down"></i></div>
         <div class="layer"><div class="ln" style="color:var(--accent)">02 STORE</div>
           <div><b style="font-size:13.5px">One SQLite DB, <span class="mono">~/.claude-brain/brain.db</span>, the single source of truth</b><div class="muted" style="font-size:12px">Every tool, every project pours into the same database. <span class="liveObs">10,283</span> observations across <span class="liveProj">18</span> projects, in one place, with secrets scrubbed before they are stored.</div></div></div>

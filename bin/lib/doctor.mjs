@@ -176,7 +176,7 @@ export function distillerRows({ status, providers, pending } = {}) {
   }
   const fixInstall = 'run: brain distill-sessions --install   (or: brain onboard)';
   if (!providers.length) {
-    rows.push({ level: 'FAIL', label: 'distiller', detail: 'no AI CLI to distil with (needs one of: claude, codex, gemini, agy) — captured sessions cannot become memories', fix: 'install Claude Code, Codex CLI or Gemini CLI, then run: brain distill-sessions --install' });
+    rows.push({ level: 'FAIL', label: 'distiller', detail: 'no AI CLI to distil with (needs one of: claude, codex, agy) — captured sessions cannot become memories', fix: 'install Claude Code, Codex CLI or Antigravity CLI, then run: brain distill-sessions --install' });
   } else if (!status.installed) {
     rows.push({ level: 'FAIL', label: 'distiller', detail: `background job not installed — sessions are captured but never turned into memories${pending ? ` (${pending} waiting)` : ''}`, fix: fixInstall });
   } else if (!status.loaded) {
@@ -257,14 +257,13 @@ export function bridgeHomeSection(env = process.env) {
 // --------------------------------------------------------------- per-tool ---
 
 // healthSignals() buckets capture freshness by source key derived from
-// generated_by_model prefixes: 'codex' | 'antigravity' | 'claude' | 'gemini'.
+// generated_by_model prefixes: 'codex' | 'antigravity' | 'claude' | 'kilo'.
 // Registry target ids are free-form (T4's choice); match by substring so this
 // keeps working across whatever exact ids land.
 function sourceKeyFor(id) {
   const s = (id || '').toLowerCase();
   if (s.includes('codex') || s.includes('chatgpt')) return 'codex';
   if (s.includes('antigravity')) return 'antigravity';
-  if (s.includes('gemini')) return 'gemini';
   if (s.includes('kilo')) return 'kilo';
   if (s.includes('claude') && !s.includes('desktop')) return 'claude';
   return null;

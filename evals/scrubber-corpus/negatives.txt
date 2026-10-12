@@ -43,7 +43,7 @@ The SVG sprite was inlined as data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDov
 Font subset shipped as data:font/woff2;base64,d09GMgABAAAAAAoAAA0AAAAAFRwAAAmoAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmAAgkIKgVyBIQsGAAE2AiQDCAQgBYMdBzIbnBLIhof
 
 # ── file paths, urls, identifiers ───────────────────────────────────────────
-Read /Users/x/dev/Brain-claude-mem/bin/lib/ingest.mjs lines 240-292
+Read /Users/x/dev/my-app/bin/lib/ingest.mjs lines 240-292
 The plist lives at ~/Library/LaunchAgents/com.claudebrain.watch-codex.plist
 Cursor state DB: ~/Library/Application Support/Cursor/User/globalStorage/state.vscdb
 Fetched https://api.github.com/repos/example-user/claude-brain/releases/tags/brain-latest

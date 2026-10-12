@@ -5,7 +5,7 @@
 //
 // NO TEST EVER CALLS A REAL MODEL OR SPENDS A TOKEN. Every provider CLI is
 // replaced by a stub executable via the per-provider env overrides
-// (BRAIN_DISTILL_{CLAUDE,GEMINI,CODEX,AGY}_BIN), and every DB is a synthetic
+// (BRAIN_DISTILL_{CLAUDE,CODEX,AGY}_BIN), and every DB is a synthetic
 // store created under the scratchpad. The real ~/.claude-brain/brain.db and
 // ~/.claude-mem/claude-mem.db are never opened at all.
 //
@@ -99,11 +99,10 @@ const GOOD = (over = {}) => JSON.stringify({
 });
 
 // Env with every provider pointed at a stub (or nowhere).
-function stubEnv({ claude, gemini, codex, agy } = {}) {
+function stubEnv({ claude, codex, agy } = {}) {
   resetBinaryCache();
   const e = { ...process.env };
   e.BRAIN_DISTILL_CLAUDE_BIN = claude || join(ROOT, 'missing-claude');
-  e.BRAIN_DISTILL_GEMINI_BIN = gemini || join(ROOT, 'missing-gemini');
   e.BRAIN_DISTILL_CODEX_BIN = codex || join(ROOT, 'missing-codex');
   e.BRAIN_DISTILL_AGY_BIN = agy || join(ROOT, 'missing-agy');
   e.PATH = join(ROOT, 'empty-path'); // no accidental real CLI via PATH scan
@@ -173,19 +172,20 @@ await ta('registry: platform_source maps to the matching provider', () => {
   eq(providerForSource('chatgpt_desktop'), 'codex', 'chatgpt_desktop');
   eq(providerForSource('claude_desktop_agent'), 'claude', 'Claude Desktop agent mode (local-agent-mode-*) routes to the claude provider');
   eq(resolveChain('claude_desktop_agent')[0], 'claude', 'claude first in the chain for a Claude Desktop agent session');
-  eq(providerForSource('gemini'), 'gemini', 'gemini');
+  eq(providerForSource('gemini'), null, 'Gemini CLI is unsupported: no own provider, plain chain');
   eq(providerForSource('antigravity'), 'agy', 'antigravity');
   eq(providerForSource('cursor'), null, 'cursor has no native CLI');
   eq(providerForSource('mcp_whatever'), null, 'unknown source');
 });
 
 await ta('registry: chain starts with the session own provider then falls back', () => {
-  eq(resolveChain('gemini')[0], 'gemini', 'gemini first for a gemini session');
+  eq(resolveChain('antigravity')[0], 'agy', 'agy first for an antigravity session');
   eq(resolveChain('codex')[0], 'codex', 'codex first for a codex session');
-  const chain = resolveChain('gemini');
+  const chain = resolveChain('codex');
   eq(new Set(chain).size, chain.length, 'chain has duplicates');
   for (const id of FALLBACK_CHAIN) assert(chain.includes(id), `chain is missing fallback ${id}`);
   assert(resolveChain('cursor').length === FALLBACK_CHAIN.length, 'cursor chain should be the plain fallback chain');
+  assert(!PROVIDERS.gemini && !FALLBACK_CHAIN.includes('gemini'), 'Gemini CLI must not be a distiller provider');
 });
 
 await ta('registry: codex uses `exec` (not -p, which is --profile there)', () => {
@@ -200,7 +200,7 @@ await ta('resolveProviderBinary: env override wins, absolute, and a bad override
   const env = stubEnv({ claude: s.bin });
   eq(resolveProviderBinary('claude', env), s.bin, 'override not used');
   assert(providerAvailable('claude', env), 'stub should be available');
-  assert(!providerAvailable('gemini', env), 'missing binary must not be available');
+  assert(!providerAvailable('agy', env), 'missing binary must not be available');
   resetBinaryCache();
   eq(resolveProviderBinary('claude', { ...env, BRAIN_DISTILL_CLAUDE_BIN: join(ROOT, 'nope') }), null, 'bad override must resolve to null');
   resetBinaryCache();
@@ -336,8 +336,8 @@ await ta('distillSession: non-zero exit with no output → failed, not rejected'
 
 await ta('distillSession: falls back to another provider and records who ACTUALLY ran', async () => {
   const g = makeStub({ out: GOOD() });
-  // A gemini session, but only the claude stub exists → chain falls through.
-  const r = await distillSession({ ...SESSION, platformSource: 'gemini' }, { env: stubEnv({ claude: g.bin }) });
+  // An antigravity session, but only the claude stub exists → chain falls through.
+  const r = await distillSession({ ...SESSION, platformSource: 'antigravity' }, { env: stubEnv({ claude: g.bin }) });
   assert(r.ok, 'fallback should still distil');
   eq(r.provider, 'claude', 'fallback provider');
   eq(r.generatedByModel, 'brain/claude:haiku', 'provenance must name the model that ran');
@@ -606,7 +606,7 @@ await ta('distillPending: distilled rows are FTS-searchable', async () => {
 
 await ta('provenance: brain/-prefixed, disjoint from claude-mem and mcp values', () => {
   assert(provenanceFor('claude', 'haiku').startsWith(PROVENANCE_PREFIX), 'prefix');
-  eq(provenanceFor('gemini', 'gemini-2.5-flash'), 'brain/gemini:gemini-2.5-flash', 'gemini');
+  eq(provenanceFor('agy', 'gemini-3.6-flash-low'), 'brain/agy:gemini-3.6-flash-low', 'agy');
   eq(provenanceFor('codex', ''), 'brain/codex', 'model-less provider');
   for (const v of ['claude-haiku-4-5-20251001', 'haiku', 'gemini', 'cursor', 'codex', 'antigravity', 'claude']) {
     assert(!v.startsWith(PROVENANCE_PREFIX), `${v} would collide`);

@@ -44,7 +44,7 @@ on() { # on <mac> <cmd...> — run inside that Mac's world
     SB_GITHUB="$SB_GITHUB" SB_LOG="$SB_LOG" SB_KEYCHAIN="$SB/$n-keychain" \
     BRAIN_NO_AUTOMATION=1 BRAIN_SKIP_NPM=1 BRAIN_TEST=1 ${LINUX_ENV:-} ${EXTRA_ENV:-} "$@"
 }
-brain() { local n="$1"; shift; on "$n" node "$SB/$n/Documents/Brain-claude-mem/bin/brain.mjs" "$@"; }
+brain() { local n="$1"; shift; on "$n" node "$SB/$n/agentic-brain/bin/brain.mjs" "$@"; }
 # tty_feed <log> <pattern> <nth> <text> ... — the "user at the keyboard" for a command run under
 # `script` (a real pty): types <text> once <pattern> has appeared <nth> times in <log>, then stays
 # attached until $TTY_UNTIL shows up in <log> (an early EOF on the pty would end the command).
@@ -72,7 +72,7 @@ echo; echo "1) Mac A — fresh install (BRAIN_MODE=init)"
 on macA env BRAIN_MODE=init AGENTIC_BRAIN_REPO=OWNER/agentic-brain \
   bash "$SB/engine-src/install.sh" > "$SB/1-install-macA.log" 2>&1; rc=$?
 [ $rc = 0 ] && ok "install.sh exits 0" || bad "install.sh exits 0" "exit $rc (see 1-install-macA.log)"
-A="$SB/macA/Documents/Brain-claude-mem"; BR="$SB_GITHUB/sandbox-user/claude-brain"
+A="$SB/macA/agentic-brain"; BR="$SB_GITHUB/sandbox-user/claude-brain"
 check "key stored in (fake) Keychain"         test -s "$SB/macA-keychain/claude-brain__age-identity"
 check "config.json → sandbox-user/claude-brain, private" \
   node -e 'const c=require(process.argv[1]);process.exit(c.repo.owner==="sandbox-user"&&c.repo.name==="claude-brain"&&c.repo.private===true?0:1)' "$A/config.json"
@@ -143,10 +143,10 @@ EXTRA_ENV="SB_GH_OFFLINE=1" brain macA audit --json --no-scrub > "$SB/2b-audit-o
 # ── 3. Second Mac: RESTORE with the pasted key ──────────────────────────────
 echo; echo "3) Mac B — restore onto a second machine"
 on macB env BRAIN_REPO=sandbox-user/claude-brain bash -c "true" # (installer's key step is a GUI paste; do it via CLI)
-on macB gh repo clone sandbox-user/claude-brain "$SB/macB/Documents/Brain-claude-mem" > /dev/null 2>&1
+on macB gh repo clone sandbox-user/claude-brain "$SB/macB/agentic-brain" > /dev/null 2>&1
 brain macB key import "$KEY" > "$SB/3-key-B.log" 2>&1
 check "key import on Mac B"                   grep -q "recipient: age1" "$SB/3-key-B.log"
-on macB env BRAIN_REPO=sandbox-user/claude-brain bash "$SB/macB/Documents/Brain-claude-mem/install.sh" > "$SB/3-install-macB.log" 2>&1; rc=$?
+on macB env BRAIN_REPO=sandbox-user/claude-brain bash "$SB/macB/agentic-brain/install.sh" > "$SB/3-install-macB.log" 2>&1; rc=$?
 [ $rc = 0 ] && ok "install.sh (restore) exits 0" || bad "install.sh (restore) exits 0" "exit $rc (see 3-install-macB.log)"
 brain macB recall "$CANARY_A" > "$SB/3-recall-B.log" 2>&1
 check "Mac B recalls Mac A's memory"          grep -q "Sandbox canary A" "$SB/3-recall-B.log"
@@ -158,22 +158,22 @@ check "…after mkdir ~/.claude-brain workaround, Mac B recalls it" grep -q "San
 # ── 4. Safety guards ────────────────────────────────────────────────────────
 echo; echo "4) Safety guards"
 # 4a. A third Mac with NO key must refuse to init over the existing brain.
-on macC gh repo clone OWNER/agentic-brain "$SB/macC/Documents/Brain-claude-mem" > /dev/null 2>&1
-git -C "$SB/macC/Documents/Brain-claude-mem" remote rename origin engine
+on macC gh repo clone OWNER/agentic-brain "$SB/macC/agentic-brain" > /dev/null 2>&1
+git -C "$SB/macC/agentic-brain" remote rename origin engine
 brain macC init --repo claude-brain --yes > "$SB/4a-init-C.log" 2>&1; rc=$?
 [ $rc != 0 ] && grep -q "already holds an encrypted brain" "$SB/4a-init-C.log" \
   && ok "no-key Mac refuses to overwrite existing brain" || bad "no-key Mac refuses to overwrite existing brain" "exit $rc"
 check "…and generated no key"                 test ! -e "$SB/macC-keychain/claude-brain__age-identity"
 # 4b. Wrong key → restore fails loudly, never silently empties the brain.
 brain macC key import "$(age-keygen 2>/dev/null | grep AGE-SECRET)" > /dev/null 2>&1
-cp "$A/config.json" "$SB/macC/Documents/Brain-claude-mem/config.json"
-git -C "$SB/macC/Documents/Brain-claude-mem" remote add origin https://github.com/sandbox-user/claude-brain.git
+cp "$A/config.json" "$SB/macC/agentic-brain/config.json"
+git -C "$SB/macC/agentic-brain" remote add origin https://github.com/sandbox-user/claude-brain.git
 brain macC restore > "$SB/4b-restore-wrongkey.log" 2>&1; rc=$?
 [ $rc != 0 ] && ok "wrong key → restore fails loudly" || bad "wrong key → restore fails loudly" "exit 0"
 # 4c. Offline during init → resumable, no key generated, nothing half-made.
 rm -rf "$SB/macD" && mac macD && mkdir -p "$SB/macD/tmp"
-on macD gh repo clone OWNER/agentic-brain "$SB/macD/Documents/Brain-claude-mem" >/dev/null 2>&1
-git -C "$SB/macD/Documents/Brain-claude-mem" remote rename origin engine
+on macD gh repo clone OWNER/agentic-brain "$SB/macD/agentic-brain" >/dev/null 2>&1
+git -C "$SB/macD/agentic-brain" remote rename origin engine
 EXTRA_ENV="SB_GH_OFFLINE=1" brain macD init --repo other-brain --yes > "$SB/4c-offline.log" 2>&1; rc=$?
 [ $rc != 0 ] && ok "offline init stops with an error" || bad "offline init stops with an error"
 check "…and generated no key"                 test ! -e "$SB/macD-keychain/claude-brain__age-identity"
@@ -219,7 +219,7 @@ downgrade() {
     const r = d.prepare("SELECT * FROM observations WHERE title = ?").get(title);
     const h = legacyHash(canonicalString({ title: r.title, subtitle: r.subtitle, facts: JSON.parse(r.facts || "[]"), narrative: r.narrative }));
     d.prepare("UPDATE observations SET content_hash = ? WHERE id = ?").run(h, r.id);
-    d.close(); console.log(h);' "$SB/$1/Documents/Brain-claude-mem" "$SB/$1/.claude-brain/brain.db" "$2"
+    d.close(); console.log(h);' "$SB/$1/agentic-brain" "$SB/$1/.claude-brain/brain.db" "$2"
 }
 sq() { sqlite3 "$SB/$1/.claude-brain/brain.db" "$2"; }
 LEG1="Legacy hash memory one"; LEG2="Legacy hash memory two"
@@ -279,7 +279,7 @@ check "fixture: three copies on Mac A"          test "$(dupcount macA)" = 3
 brain macA recall "Dedupe sandbox memory Tuesdays" > "$SB/6d-recall-A0.log" 2>&1
 check "recall shows it once even before a clean" test "$(grep -c "$DUP" "$SB/6d-recall-A0.log")" = 1
 mkdir -p "$SB/macA/work/sandbox"
-on macA sh -c "cd '$SB/macA/work/sandbox' && node '$SB/macA/Documents/Brain-claude-mem/bin/lib/sessionstart.mjs' --hook" > "$SB/6d-start-A0.json" 2>&1
+on macA sh -c "cd '$SB/macA/work/sandbox' && node '$SB/macA/agentic-brain/bin/lib/sessionstart.mjs' --hook" > "$SB/6d-start-A0.json" 2>&1
 check "startup block + preview: once, no (untitled)" sh -c "[ \"\$(grep -o '$DUP' '$SB/6d-start-A0.json' | wc -l | tr -d ' ')\" -le 2 ] && grep -q '$DUP' '$SB/6d-start-A0.json' && ! grep -q '(untitled)' '$SB/6d-start-A0.json'"
 brain macA sync > "$SB/6d-sync-A1.log" 2>&1
 brain macB sync > "$SB/6d-sync-B1.log" 2>&1
@@ -294,7 +294,7 @@ brain macA clean --dupes --apply > "$SB/6d-clean-apply.log" 2>&1
 check "--apply behind a verified backup"        sh -c "ls '$SB/macA/.claude-brain/backups/'pre-clean-dupes-*.db && grep -q 'nothing deleted' '$SB/6d-clean-apply.log'"
 check "…two copies hidden, none deleted"        test "$(duphidden macA)/$(dupcount macA)/$(sq macA 'select count(*) from observations')" = "2/3/$NA"
 check "…no row left blank or untitled"          test "$(blank macA)" = "$BLANK_A"
-on macA sh -c "cd '$SB/macA/work/sandbox' && node '$SB/macA/Documents/Brain-claude-mem/bin/lib/sessionstart.mjs'" > "$SB/6d-start-A1.txt" 2>&1
+on macA sh -c "cd '$SB/macA/work/sandbox' && node '$SB/macA/agentic-brain/bin/lib/sessionstart.mjs'" > "$SB/6d-start-A1.txt" 2>&1
 check "startup block after clean: once, no (untitled)" sh -c "[ \"\$(grep -c '$DUP' '$SB/6d-start-A1.txt')\" = 1 ] && ! grep -q '(untitled)' '$SB/6d-start-A1.txt'"
 brain macA sync > "$SB/6d-sync-A2.log" 2>&1; rcA=$?
 brain macB sync > "$SB/6d-sync-B2.log" 2>&1; rcB=$?
@@ -397,7 +397,7 @@ L="$SB/8b-install-macE.log"; : > "$L"
 # it also asks, before anything is captured, whether to start with past sessions: this user picks "start fresh"
 TTY_UNTIL="Done. Your brain|❌" tty_feed "$L" "Choose \[1\]" 1 "2" "Recovery passphrase" 1 "$RECOVERY_PASS" \
   | on macE env BRAIN_REPO=sandbox-user/claude-brain script -q /dev/null bash "$SB/engine-src/install.sh" > "$L" 2>&1
-E="$SB/macE/Documents/Brain-claude-mem"
+E="$SB/macE/agentic-brain"
 check "Mac E: installer asked about past sessions, recommending them" grep -q "Start with my past sessions (recommended)" "$L"
 check "Mac E: 'start fresh' was recorded" grep -q '"mode": "fresh"' "$SB/macE/.claude-brain/past-sessions.json"
 check "Mac E: install summary says it started fresh" grep -q "Starting fresh" "$L"
@@ -410,20 +410,20 @@ check "Mac E recalls Mac A's memory"          grep -q "From A after split" "$SB/
 brain macE recall "$CANARY_B" > "$SB/8d-recall-E.log" 2>&1
 check "…and Mac B's"                          grep -q "From B after split" "$SB/8d-recall-E.log"
 # wrong passphrase: fails cleanly, nothing stored, nothing restored
-on macF gh repo clone sandbox-user/claude-brain "$SB/macF/Documents/Brain-claude-mem" > /dev/null 2>&1
-cp "$E/config.json" "$SB/macF/Documents/Brain-claude-mem/config.json"
+on macF gh repo clone sandbox-user/claude-brain "$SB/macF/agentic-brain" > /dev/null 2>&1
+cp "$E/config.json" "$SB/macF/agentic-brain/config.json"
 echo "not the passphrase at all" | brain macF key recover --passphrase-stdin > "$SB/8e-wrong-stdin.log" 2>&1; rc=$?
 [ $rc != 0 ] && grep -q "Wrong recovery passphrase" "$SB/8e-wrong-stdin.log" && grep -q "Nothing was changed" "$SB/8e-wrong-stdin.log" \
   && ok "wrong passphrase → clear error, non-zero exit" || bad "wrong passphrase → clear error, non-zero exit" "exit $rc"
 L="$SB/8f-wrong-restore.log"; : > "$L"
 tty_feed "$L" "Recovery passphrase" 1 "wrong one 1234" "Recovery passphrase" 2 "wrong two 1234" "Recovery passphrase" 3 "wrong three 1234" \
-  | on macF script -q /dev/null node "$SB/macF/Documents/Brain-claude-mem/bin/brain.mjs" restore > "$L" 2>&1; rc=$?
+  | on macF script -q /dev/null node "$SB/macF/agentic-brain/bin/brain.mjs" restore > "$L" 2>&1; rc=$?
 [ $rc != 0 ] && grep -q "Wrong recovery passphrase" "$L" && ok "restore: 3 wrong passphrases → stops cleanly" || bad "restore: 3 wrong passphrases → stops cleanly" "exit $rc"
 check "…no key stored on Mac F"               test ! -e "$SB/macF-keychain/claude-brain__age-identity"
 check "…no memory restored on Mac F"          test ! -e "$SB/macF/.claude-brain/brain.db"
 # a Mac that already holds a DIFFERENT key is never silently switched
 rm -rf "$SB/macG" "$SB/macG-keychain"; mac macG; mkdir -p "$SB/macG/tmp"
-on macG gh repo clone sandbox-user/claude-brain "$SB/macG/Documents/Brain-claude-mem" > /dev/null 2>&1
+on macG gh repo clone sandbox-user/claude-brain "$SB/macG/agentic-brain" > /dev/null 2>&1
 brain macG key import "$(age-keygen 2>/dev/null | grep AGE-SECRET)" > /dev/null 2>&1
 cK=$(cat "$SB/macG-keychain/claude-brain__age-identity" 2>/dev/null)
 echo "$RECOVERY_PASS" | brain macG key recover --passphrase-stdin > "$SB/8g-recover-G.log" 2>&1; rc=$?
@@ -435,16 +435,16 @@ echo "$RECOVERY_PASS" | brain macF key recover --passphrase-stdin > "$SB/8h-reco
   && ok "--passphrase-stdin recovers (key not printed)" || bad "--passphrase-stdin recovers (key not printed)"
 # brain init offers it: a fresh user in a terminal says yes → the first sync already carries the file
 rm -rf "$SB/macH" "$SB/macH-keychain"; mac macH; mkdir -p "$SB/macH/tmp"
-on macH gh repo clone OWNER/agentic-brain "$SB/macH/Documents/Brain-claude-mem" > /dev/null 2>&1
-git -C "$SB/macH/Documents/Brain-claude-mem" remote rename origin engine
+on macH gh repo clone OWNER/agentic-brain "$SB/macH/agentic-brain" > /dev/null 2>&1
+git -C "$SB/macH/agentic-brain" remote rename origin engine
 L="$SB/8i-init-H.log"; : > "$L"
 TTY_UNTIL="Your brain is live|✖" tty_feed "$L" "Protect your key" 1 "y" "Recovery passphrase" 1 "$RECOVERY_PASS" "Type it again" 1 "$RECOVERY_PASS" \
-  | on macH script -q /dev/null node "$SB/macH/Documents/Brain-claude-mem/bin/brain.mjs" init --repo h-brain --no-automation > "$L" 2>&1
+  | on macH script -q /dev/null node "$SB/macH/agentic-brain/bin/brain.mjs" init --repo h-brain --no-automation > "$L" 2>&1
 HB="$SB_GITHUB/sandbox-user/h-brain"
 check "init offers the passphrase; first sync pushes the recovery file" git -C "$HB.git" cat-file -e main:memory/key-recovery.age
 git -C "$HB.git" show main:memory/key-recovery.age > "$SB/h-recovery.age" 2>/dev/null
 rm -rf "$SB/macI" "$SB/macI-keychain"; mac macI; mkdir -p "$SB/macI/tmp"
-on macI gh repo clone sandbox-user/h-brain "$SB/macI/Documents/Brain-claude-mem" > /dev/null 2>&1
+on macI gh repo clone sandbox-user/h-brain "$SB/macI/agentic-brain" > /dev/null 2>&1
 echo "$RECOVERY_PASS" | brain macI key recover --passphrase-stdin > "$SB/8j-recover-I.log" 2>&1
 [ -s "$SB/macH-keychain/claude-brain__age-identity" ] && [ "$(cat "$SB/macI-keychain/claude-brain__age-identity" 2>/dev/null)" = "$(cat "$SB/macH-keychain/claude-brain__age-identity")" ] \
   && ok "…and it unlocks that brain's key on another Mac" || bad "…and it unlocks that brain's key on another Mac"

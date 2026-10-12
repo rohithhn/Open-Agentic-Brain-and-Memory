@@ -1,5 +1,5 @@
 // Cross-tool session INGESTION. Reads the sessions/history of every LINKED AI
-// tool — Claude Code, Codex, Gemini, Antigravity, Cursor, Kilo Code (opt-out model) — and
+// tool — Claude Code, Codex, Antigravity, Cursor, Kilo Code (opt-out model) — and
 // merges them into the brain's own store, so all of it is searchable together.
 // Idempotent: INSERT OR IGNORE on the DB's natural unique indexes.
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
@@ -163,208 +163,6 @@ function readCodexFile(f) {
     }
   }
   return { meta, msgs };
-}
-
-// ── Gemini CLI: ~/.gemini/tmp/<slug>/ — TWO on-disk formats, both parsed ───────
-//
-// LEGACY (Gemini CLI ≲0.4x):  tmp/<slug>/logs.json
-//   One flat JSON array for the whole project; records are
-//   { sessionId, messageId, type:'user', message, timestamp } — user prompts only.
-//
-// CURRENT (Gemini CLI ≥ ~0.49): tmp/<slug>/chats/session-<ISO>-<id8>.jsonl
-//   One file per session, no logs.json written at all. Verified over 378 files
-//   on this machine (May–Jul 2026); the shape is stable across that whole range:
-//     line 0  header  { sessionId (uuid), projectHash (sha256 of the real path),
-//                       startTime (ISO), lastUpdated (ISO), kind:'main' }
-//     then a mix of, in write order:
-//       { $set: { messages:[ …record… ], lastUpdated } }  ← opening snapshot (1 record)
-//       { $set: { lastUpdated } }                         ← heartbeat, no content
-//       record  { id, timestamp (ISO), type, content, model?, thoughts?, tokens?,
-//                 toolCalls?: [{ id,name,args,description,displayName,status,
-//                                result,resultDisplay,timestamp }] }
-//   Record `type` is 'user' | 'gemini' | 'info'. `content` is an ARRAY of parts for
-//   'user' ({text:…} = a real prompt, {functionResponse:…} = a tool result replayed
-//   as a user turn) and a RAW STRING for 'gemini'/'info'. So "user prompt" ⇔
-//   type==='user' with at least one {text} part; tool traffic carries no text and
-//   is therefore never mistaken for a prompt.
-//
-// Both formats key sessions by the SAME uuid, so a session present in both (real
-// case: one project dir seen in the wild) is emitted ONCE. Legacy wins on conflict — deliberately:
-// observations are unique on (memory_session_id, content_hash), so re-emitting an
-// already-ingested session with a richer transcript would insert a SECOND
-// observation row for it rather than dedupe. Legacy-first keeps the bytes (and
-// hence the hash) of anything already in the DB stable.
-function geminiSlugProjects() {
-  // slug -> real project path (from projects.json: realPath -> slug)
-  const slugToProject = new Map();
-  const pj = join(HOME, '.gemini', 'projects.json');
-  if (existsSync(pj)) {
-    try {
-      const map = JSON.parse(readFileSync(pj, 'utf8')).projects || {};
-      for (const [path, slug] of Object.entries(map)) slugToProject.set(slug, path);
-    } catch {}
-  }
-  return slugToProject;
-}
-
-// projects.json first (authoritative, and what already-ingested rows were named
-// from), then the per-dir `.project_root` marker, then the slug itself.
-function geminiRoot(slug, dir, slugToProject) {
-  const mapped = slugToProject.get(slug);
-  if (mapped) return mapped;
-  try {
-    const root = readFileSync(join(dir, '.project_root'), 'utf8').trim();
-    if (root) return root;
-  } catch {}
-  return null;
-}
-function geminiProject(slug, dir, slugToProject) {
-  const root = geminiRoot(slug, dir, slugToProject);
-  return root ? basename(root) : slug;
-}
-
-// Text of one chats record: raw string for gemini/info, {text} parts for user.
-// functionResponse parts contribute nothing (tool result, not prose).
-function geminiRecordText(rec) {
-  const c = rec.content;
-  if (typeof c === 'string') return c.trim();
-  if (Array.isArray(c)) return c.map((p) => (p && typeof p.text === 'string' ? p.text : '')).join('').trim();
-  return '';
-}
-
-// One chats/*.jsonl → one item (or null). Malformed/truncated lines are skipped,
-// never fatal: a session still in flight has a half-written last line.
-function parseGeminiChatFile(file) {
-  let raw;
-  try { raw = readFileSync(file, 'utf8'); } catch { return null; }
-  let header = null;
-  let snapshot = [];
-  const appended = [];
-  for (const line of raw.split('\n')) {
-    if (!line.trim()) continue;
-    let o;
-    try { o = JSON.parse(line); } catch { continue; }
-    if (!o || typeof o !== 'object' || Array.isArray(o)) continue;
-    if (!header && o.kind && o.sessionId) { header = o; continue; }
-    if (o.$set && typeof o.$set === 'object') {
-      // A $set carrying `messages` REPLACES the snapshot (that is what $set means),
-      // so a future writer that re-snapshots the whole history can't double-count.
-      if (Array.isArray(o.$set.messages)) {
-        snapshot = o.$set.messages.filter((m) => m && typeof m === 'object');
-      }
-      continue;
-    }
-    if (typeof o.type === 'string') appended.push(o);
-  }
-  // Snapshot first (it is the session opener), then appends it doesn't already cover.
-  const snapIds = new Set(snapshot.map((m) => m.id).filter(Boolean));
-  const records = snapshot.concat(appended.filter((r) => !r.id || !snapIds.has(r.id)));
-
-  const lines = [];
-  const prompts = [];
-  for (const r of records) {
-    const text = geminiRecordText(r);
-    if (text) {
-      lines.push(`${r.type}: ${text}`);
-      if (r.type === 'user') prompts.push(text);
-    }
-    // Tool names only — args/results can be enormous (and are echoed back as
-    // functionResponse turns anyway); the names are what makes a session findable.
-    if (Array.isArray(r.toolCalls) && r.toolCalls.length) {
-      const names = r.toolCalls.map((t) => t && (t.name || t.displayName)).filter(Boolean);
-      if (names.length) lines.push(`tool: ${[...new Set(names)].join(', ')}`);
-    }
-  }
-  if (!lines.length) return null; // empty/aborted session — nothing searchable
-
-  const sid = header?.sessionId || basename(file).replace(/\.jsonl$/, '');
-  const ts = header?.startTime || records.find((r) => r.timestamp)?.timestamp || '';
-  const full = lines.join('\n\n');
-  return {
-    sid,
-    title: clip((prompts[0] || 'Gemini session').replace(/\s+/g, ' '), 80),
-    transcript: clip(full, TRANSCRIPT_CAP),
-    size: full.length,
-    ts,
-    prompts,
-    ...(full.length > TRANSCRIPT_CAP ? { fullText: full } : {}),
-  };
-}
-
-export function parseGemini() {
-  const tmp = join(HOME, '.gemini', 'tmp');
-  if (!existsSync(tmp)) return [];
-  const slugToProject = geminiSlugProjects();
-  let slugs;
-  try { slugs = readdirSync(tmp); } catch { return []; }
-
-  const out = [];
-  const seen = new Set(); // sessionIds already emitted — the cross-format dedupe key
-
-  // ── Pass 1: legacy logs.json (runs first so it wins any overlap) ──
-  for (const slug of slugs) {
-    const dir = join(tmp, slug);
-    const logs = join(dir, 'logs.json');
-    if (!existsSync(logs)) continue;
-    let entries;
-    try { entries = JSON.parse(readFileSync(logs, 'utf8')); } catch { continue; }
-    if (!Array.isArray(entries)) continue;
-    const bySession = new Map();
-    for (const e of entries) {
-      if (!e || !e.sessionId) continue;
-      if (!bySession.has(e.sessionId)) bySession.set(e.sessionId, []);
-      bySession.get(e.sessionId).push(e);
-    }
-    for (const [sid, es] of bySession) {
-      if (seen.has(sid)) continue;
-      seen.add(sid);
-      es.sort((a, b) => (a.messageId || 0) - (b.messageId || 0));
-      const msgs = es.map((e) => `${e.type}: ${e.message}`);
-      const legacyFull = msgs.join('\n\n');
-      const title = clip((es.find((e) => e.type === 'user')?.message || 'Gemini session').replace(/\s+/g, ' '), 80);
-      out.push({
-        sid,
-        project: geminiProject(slug, dir, slugToProject),
-        cwd: geminiRoot(slug, dir, slugToProject),
-        title,
-        transcript: clip(msgs.join('\n\n'), TRANSCRIPT_CAP),
-        size: msgs.join('\n\n').length,
-        ts: es[0]?.timestamp,
-        prompts: es.filter((e) => e.type === 'user').map((e) => e.message),
-        ...(legacyFull.length > TRANSCRIPT_CAP ? { fullText: legacyFull } : {}),
-      });
-    }
-  }
-
-  // ── Pass 2: chats/*.jsonl, newest files first, capped like the other parsers ──
-  const files = [];
-  for (const slug of slugs) {
-    const dir = join(tmp, slug);
-    const chats = join(dir, 'chats');
-    if (!existsSync(chats)) continue;
-    let ents;
-    try { ents = readdirSync(chats, { withFileTypes: true }); } catch { continue; }
-    for (const e of ents) {
-      if (!e.isDirectory() && e.name.endsWith('.jsonl')) files.push({ path: join(chats, e.name), slug, dir });
-    }
-  }
-  const mtime = (p) => { try { return statSync(p).mtimeMs; } catch { return 0; } };
-  files.sort((a, b) => mtime(b.path) - mtime(a.path));
-  let real = 0;
-  for (const f of files) {
-    if (real >= MAX_PER_TOOL) break; // counts real sessions only (see newestReal)
-    let item;
-    try { item = parseGeminiChatFile(f.path); } catch { continue; }
-    if (!item || seen.has(item.sid)) continue; // already captured from logs.json
-    seen.add(item.sid);
-    item.project = geminiProject(f.slug, f.dir, slugToProject);
-    item.cwd = geminiRoot(f.slug, f.dir, slugToProject);
-    out.push(item);
-    if (!takesNoSlot(item)) real++;
-  }
-
-  // Newest first, capped — same contract as parseCodex/parseCursor.
-  return newestReal(out);
 }
 
 // ── Antigravity (agy) ────────────────────────────────────────────────────────
@@ -744,7 +542,7 @@ export function parseCursor() {
 //       id is already a slug in kilo.db is skipped here (no double capture).
 // Read-only: the DB is opened readonly and nothing under Kilo's directories is ever written.
 // Not captured: child (sub-agent) sessions (parent_id set) — their prompts are Kilo-generated, not the user's;
-// reasoning, synthetic/ignored text, tool inputs/outputs (tool NAMES only, like the Gemini parser).
+// reasoning, synthetic/ignored text, tool inputs/outputs (tool NAMES only).
 const KILO_SESSION_LIMIT = 2000; // newest sessions examined per run (the window below keeps MAX_PER_TOOL real ones)
 const KILO_GENERIC_TITLE = /^(new session|child session)\b/i;
 
@@ -1243,7 +1041,7 @@ export function parsedItems(tool) {
   return PARSERS[tool]();
 }
 
-const RAW_PARSERS = { claude: parseClaude, codex: parseCodex, gemini: parseGemini, antigravity: parseAntigravity, cursor: parseCursor, kilo: parseKilo };
+const RAW_PARSERS = { claude: parseClaude, codex: parseCodex, antigravity: parseAntigravity, cursor: parseCursor, kilo: parseKilo };
 const PARSERS = Object.fromEntries(
   Object.entries(RAW_PARSERS).map(([tool, fn]) => [tool, () => fn().map(scrubItem)])
 );

@@ -110,12 +110,19 @@ t('detectedTargets() is a subset of TARGETS', () => {
   assert(detected.length <= TARGETS.length, 'detectedTargets() cannot be larger than TARGETS');
 });
 
-t('the expected tool families are present (11 rows: 3 Claude Code profiles + 5 + 3 Kilo hosts)', () => {
+t('the expected tool families are present (10 rows: 3 Claude Code profiles + 4 + 3 Kilo hosts)', () => {
   const ids = new Set(TARGETS.map((e) => e.id));
-  for (const id of ['claude_code', 'claude_work', 'claude_personal', 'codex', 'antigravity', 'gemini_cli', 'cursor', 'kilo_vscode', 'kilo_cursor', 'kilo_cli', 'claude_desktop']) {
+  for (const id of ['claude_code', 'claude_work', 'claude_personal', 'codex', 'antigravity', 'cursor', 'kilo_vscode', 'kilo_cursor', 'kilo_cli', 'claude_desktop']) {
     assert(ids.has(id), `missing expected target id: ${id}`);
   }
-  eq(TARGETS.length, 11, 'expected exactly 11 registry rows');
+  eq(TARGETS.length, 10, 'expected exactly 10 registry rows');
+});
+
+t('Gemini CLI is not a wiring target (Antigravity CLI is the supported ~/.gemini product)', () => {
+  assert(!TARGETS.some((e) => e.id === 'gemini_cli'), 'gemini_cli row must be absent');
+  assert(!TARGETS.some((e) => /gemini cli/i.test(e.name)), 'no row may be named Gemini CLI');
+  const settings = join(homedir(), '.gemini', 'settings.json');
+  assert(!TARGETS.some((e) => e.configPath() === settings), '~/.gemini/settings.json must not be a wiring target');
 });
 
 t('serverDef() uses T2\'s bridgePath(), not a repo-relative path', () => {
@@ -202,7 +209,7 @@ t('Claude Code profiles wire <config dir>/.claude.json (what `claude mcp add --s
   }
 });
 
-t('claude_code capture is native, codex/antigravity are watcher, cursor/gemini_cli are ingest, claude_desktop is none', () => {
+t('claude_code capture is native, codex/antigravity are watcher, cursor is ingest, claude_desktop is none', () => {
   const byId = Object.fromEntries(TARGETS.map((e) => [e.id, e]));
   eq(byId.claude_code.capture, 'native', 'claude_code capture');
   eq(byId.claude_work.capture, 'native', 'claude_work capture');
@@ -210,9 +217,6 @@ t('claude_code capture is native, codex/antigravity are watcher, cursor/gemini_c
   eq(byId.codex.capture, 'watcher', 'codex capture');
   eq(byId.antigravity.capture, 'watcher', 'antigravity capture');
   eq(byId.cursor.capture, 'ingest', 'cursor capture');
-  // gemini_cli was 'none' pre-split; now 'ingest' — parseGemini runs on sync
-  // for linked tools (gemini-antigravity-split.md §5).
-  eq(byId.gemini_cli.capture, 'ingest', 'gemini_cli capture');
   eq(byId.claude_desktop.capture, 'none', 'claude_desktop capture');
 });
 
@@ -226,17 +230,16 @@ t('Kilo rows: named per host, ingest capture, `mcp` servers key via the kilo sha
   }
 });
 
-t('display names updated per gemini-antigravity-split.md §5', () => {
+t('antigravity display name and paths stay on ~/.gemini/config + GEMINI.md', () => {
   const byId = Object.fromEntries(TARGETS.map((e) => [e.id, e]));
   eq(byId.antigravity.name, 'Antigravity CLI (agy)', 'antigravity display name');
-  eq(byId.gemini_cli.name, 'Gemini CLI (gemini)', 'gemini_cli display name');
+  eq(byId.antigravity.configPath(), join(homedir(), '.gemini', 'config', 'mcp_config.json'), 'antigravity config path');
+  eq(byId.antigravity.push.file(), join(homedir(), '.gemini', 'GEMINI.md'), 'antigravity push file');
 });
 
-t('gemini_cli and antigravity have a detect() override that is callable and boolean (value not asserted — machine-dependent)', () => {
+t('antigravity has a detect() override that is callable and boolean (value not asserted — machine-dependent)', () => {
   const byId = Object.fromEntries(TARGETS.map((e) => [e.id, e]));
-  assert(typeof byId.gemini_cli.detect === 'function', 'gemini_cli.detect must be a function');
   assert(typeof byId.antigravity.detect === 'function', 'antigravity.detect must be a function');
-  assert(typeof byId.gemini_cli.detect() === 'boolean', 'gemini_cli.detect() must return a boolean');
   assert(typeof byId.antigravity.detect() === 'boolean', 'antigravity.detect() must return a boolean');
 });
 
@@ -244,7 +247,7 @@ t('cursor and claude_desktop have no global push; everyone else does', () => {
   const byId = Object.fromEntries(TARGETS.map((e) => [e.id, e]));
   eq(byId.cursor.push, null, 'cursor push must be null (per-repo AGENTS.md only)');
   eq(byId.claude_desktop.push, null, 'claude_desktop push must be null (no auto-loaded global file)');
-  for (const id of ['claude_code', 'claude_work', 'claude_personal', 'codex', 'antigravity', 'gemini_cli']) {
+  for (const id of ['claude_code', 'claude_work', 'claude_personal', 'codex', 'antigravity']) {
     assert(byId[id].push !== null, `${id} should have a push target`);
   }
 });
@@ -259,41 +262,17 @@ t('module import has no side effects (no fs writes occurred)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// binOnPath() edge cases + four-scenario gemini_cli/antigravity detection.
+// binOnPath() edge cases + Antigravity detection scenarios.
 //
-// MACHINE-INDEPENDENCE — read before touching this section.
+// binOnPath() always scans /opt/homebrew/bin and /usr/local/bin in addition to
+// the PATH passed in, so the edge cases below use an injected `env` AND a
+// synthetic, randomly-generated binary name that cannot exist in those dirs on
+// any machine — identical PASS/FAIL on a laptop and on a CI box.
 //
-// wire-targets.mjs's gemini_cli.detect() and antigravity.detect() are NOT
-// injectable: they close over the real homedir() and, for gemini_cli, over
-// binOnPath's default `env = process.env`. binOnPath() ALSO always scans
-// /opt/homebrew/bin and /usr/local/bin *in addition* to whatever PATH is
-// passed in — that EXTRA_BIN_DIRS scan is unconditional by design (see
-// bin/lib/wire-targets.mjs). This machine genuinely has a `gemini` binary at
-// /opt/homebrew/bin/gemini (confirmed in
-// docs/specs/gemini-antigravity-split.md §1.1). That means a test which only
-// fabricates a temp $HOME and then calls the real detectedTargets() would see
-// gemini_cli detected in ALL FOUR scenarios below on this laptop — while the
-// exact same test would see it detected only when creds are present on a CI
-// box with no `gemini` binary anywhere. Same test, two different verdicts:
-// that is false confidence, not coverage. We were explicitly warned off it.
-//
-// Instead we test the *documented formula* from gemini-antigravity-split.md
-// §2 — `existsSync(oauth_creds.json) || existsSync(google_accounts.json) ||
-// binOnPath('gemini')` — directly and deterministically:
-//   - the creds half uses existsSync() against our own throwaway temp paths
-//     (never touches ~/.gemini, so it is trivially machine-independent);
-//   - the binary half uses the REAL exported binOnPath(name, env), called
-//     with an injected `env` AND a synthetic, randomly-generated binary name
-//     that cannot exist in /opt/homebrew/bin or /usr/local/bin on ANY
-//     machine — this sidesteps the EXTRA_BIN_DIRS collision entirely,
-//     because that scan only ever matches a file literally named `name`.
-// This exercises the real binOnPath() code path and the real OR-shaped
-// formula, and gives an identical PASS/FAIL result whether run on a laptop
-// with Gemini CLI installed or on a CI box without it. Separately, a plain
-// smoke test above calls the REAL (non-injectable) gemini_cli.detect() /
-// antigravity.detect() and asserts only that they return a boolean —
-// exercising the real closures without depending on their machine-specific
-// value.
+// The scenarios mirror antigravity.detect() (`existsSync(~/.gemini/config)`)
+// against throwaway temp homes: Antigravity CLI shares ~/.gemini/ with Google's
+// separate gemini CLI, so files that product leaves in the ~/.gemini root
+// (oauth_creds.json, settings.json) must never make Antigravity look installed.
 
 const FAKE_BIN = `wt_fixture_${randomUUID().replace(/-/g, '').slice(0, 12)}`;
 
@@ -370,50 +349,34 @@ t('binOnPath: an unreadable directory does not throw', () => {
   });
 });
 
-// Mirrors the §2 formula exactly, with the creds half backed by throwaway
-// temp paths and the binary half backed by the real binOnPath() + FAKE_BIN.
-function scenario({ creds, binary, config }) {
+// Mirrors antigravity.detect() against a throwaway temp home.
+function scenario({ geminiRootFiles, config }) {
   return withTempDir((home) => {
     const geminiHome = join(home, '.gemini');
     mkdirSync(geminiHome, { recursive: true });
-    if (creds) writeFileSync(join(geminiHome, 'oauth_creds.json'), ''); // empty marker, never real creds
+    if (geminiRootFiles) {
+      writeFileSync(join(geminiHome, 'oauth_creds.json'), ''); // empty marker, never real creds
+      writeFileSync(join(geminiHome, 'settings.json'), '{}\n');
+    }
     if (config) mkdirSync(join(geminiHome, 'config'), { recursive: true });
-    const binDir = join(home, 'bin');
-    mkdirSync(binDir, { recursive: true });
-    if (binary) makeExecutable(binDir, FAKE_BIN);
-
-    const credsPresent =
-      existsSync(join(geminiHome, 'oauth_creds.json')) || existsSync(join(geminiHome, 'google_accounts.json'));
-    const binaryPresent = binOnPath(FAKE_BIN, { PATH: binDir });
-    return {
-      gemini_cli: credsPresent || binaryPresent,
-      antigravity: existsSync(join(geminiHome, 'config')),
-    };
+    return { antigravity: existsSync(join(geminiHome, 'config')) };
   });
 }
 
-t('scenario: both Gemini CLI and Antigravity installed => both detected', () => {
-  const r = scenario({ creds: true, binary: true, config: true });
-  assert(r.gemini_cli === true, 'gemini_cli should be detected (creds + binary present)');
-  assert(r.antigravity === true, 'antigravity should be detected (config/ present)');
+t('scenario: Antigravity installed => detected', () => {
+  assert(scenario({ geminiRootFiles: false, config: true }).antigravity === true, 'antigravity should be detected (config/ present)');
 });
 
-t('scenario: only Gemini CLI installed => gemini_cli detected, antigravity not', () => {
-  const r = scenario({ creds: true, binary: false, config: false });
-  assert(r.gemini_cli === true, 'gemini_cli should be detected (creds present)');
-  assert(r.antigravity === false, 'antigravity should NOT be detected (no config/)');
+t('scenario: only gemini-CLI root files under ~/.gemini => Antigravity NOT detected', () => {
+  assert(scenario({ geminiRootFiles: true, config: false }).antigravity === false, 'oauth_creds.json/settings.json must not imply Antigravity');
 });
 
-t('scenario: only Antigravity installed => antigravity detected, gemini_cli not', () => {
-  const r = scenario({ creds: false, binary: false, config: true });
-  assert(r.antigravity === true, 'antigravity should be detected (config/ present)');
-  assert(r.gemini_cli === false, 'gemini_cli should NOT be detected (no creds, no matching binary)');
+t('scenario: both present => Antigravity detected', () => {
+  assert(scenario({ geminiRootFiles: true, config: true }).antigravity === true, 'antigravity should be detected');
 });
 
-t('scenario: neither installed => neither detected', () => {
-  const r = scenario({ creds: false, binary: false, config: false });
-  assert(r.gemini_cli === false, 'gemini_cli should NOT be detected');
-  assert(r.antigravity === false, 'antigravity should NOT be detected');
+t('scenario: bare ~/.gemini => Antigravity NOT detected', () => {
+  assert(scenario({ geminiRootFiles: false, config: false }).antigravity === false, 'antigravity should NOT be detected');
 });
 
 // ── Regression: background services launch CLIs by absolute path ────────────

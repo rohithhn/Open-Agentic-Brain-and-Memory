@@ -54,7 +54,7 @@ import { LOG_TABLE, ensureLog } from './bulklog.mjs';
 export { LOG_TABLE };
 export const KIND_RECAPTURE = 'recapture';
 export const KIND_CURSOR = 'cursor-projects';
-const RECAPTURE_TOOLS = ['claude', 'codex', 'gemini', 'antigravity', 'cursor', 'kilo'];
+const RECAPTURE_TOOLS = ['claude', 'codex', 'antigravity', 'cursor', 'kilo'];
 
 const total = (db) => (tableExists(db, 'observations') ? db.prepare('SELECT COUNT(*) n FROM observations').get().n : 0);
 const colsOf = (db, table) => new Set(db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name));

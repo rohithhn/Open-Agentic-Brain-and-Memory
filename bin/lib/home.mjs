@@ -102,7 +102,7 @@ export function healthSignals() {
       for (const r of rows) {
         const g = (r.g || '').toLowerCase();
         const key = g.startsWith('codex') ? 'codex' : g.startsWith('antigravity') ? 'antigravity'
-          : (g.startsWith('claude') || g.startsWith('haiku')) ? 'claude' : g.startsWith('gemini') ? 'gemini' : g.startsWith('kilo') ? 'kilo' : null;
+          : (g.startsWith('claude') || g.startsWith('haiku')) ? 'claude' : g.startsWith('kilo') ? 'kilo' : null;
         if (!key) continue;
         if (!sources[key] || r.t > sources[key].last) sources[key] = { last: r.t, ageMs: now - r.t };
       }

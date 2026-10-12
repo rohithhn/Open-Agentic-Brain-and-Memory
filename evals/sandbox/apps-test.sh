@@ -30,7 +30,7 @@ fi
 GUIPATH="/usr/bin:/bin:/usr/sbin:/sbin"   # what macOS gives apps launched from the Dock
 on() { env -i HOME="$H" PATH="$FULLPATH" USER=sandbox TMPDIR="$H/tmp" SB_GITHUB="$SB_GITHUB" \
          SB_LOG="$SB_LOG" SB_KEYCHAIN="$KC" BRAIN_NO_AUTOMATION=1 BRAIN_SKIP_NPM=1 BRAIN_TEST=1 ${LINUX_ENV:-} "$@"; }
-E="$H/Documents/Brain-claude-mem"
+E="$H/agentic-brain"
 brain() { on node "$E/bin/brain.mjs" "$@"; }
 
 # ── engine ────────────────────────────────────────────────────────────────
@@ -99,6 +99,11 @@ cat > "$H/.codex/sessions/2026/09/28/rollout-2026-09-28T09-00-00-cx1.jsonl" <<'E
 {"timestamp":"2026-09-28T09:00:01Z","type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"Add rate limiting to the mango endpoint"}]}}
 {"timestamp":"2026-09-28T09:00:09Z","type":"response_item","payload":{"type":"message","role":"assistant","content":[{"type":"output_text","text":"Added a token bucket to mango."}]}}
 EOF
+# Gemini CLI present (signed in, binary on PATH) — still must never be wired.
+mkdir -p "$H/.gemini" "$H/stubbin"
+echo '{ "access_token": "sandbox-not-a-token" }' > "$H/.gemini/oauth_creds.json"
+printf '#!/bin/sh\necho 0.1.0\n' > "$H/stubbin/gemini"; chmod +x "$H/stubbin/gemini"
+FULLPATH="$H/stubbin:$FULLPATH"
 # Antigravity CLI
 mkdir -p "$H/.gemini/config" "$H/.gemini/antigravity-cli"
 echo '{ "mcpServers": { "figma": { "command": "npx", "args": ["figma-mcp"] } } }' > "$H/.gemini/config/mcp_config.json"
@@ -211,7 +216,8 @@ node --input-type=module -e '
   if (!raw.includes("\"model\": \"kilo/auto\", // keep this")) r.push("LOST inline comment");
   if (r.length) { console.log(r.join("; ")); process.exit(1); }' "file://$E/bin/lib/jsonc-edit.mjs" "$KJ" > "$SB/.why" 2>&1 \
   && ok "Kilo Code (kilo.jsonc mcp): wired, comments + existing server + model kept" || bad "Kilo Code (kilo.jsonc mcp): wired, existing config kept" "$(cat "$SB/.why")"
-check "Gemini CLI (not installed) NOT wired" test ! -e "$H/.gemini/settings.json"
+check "Gemini CLI (installed + signed in) NOT wired" test ! -e "$H/.gemini/settings.json"
+grep -q '^{ "access_token": "sandbox-not-a-token" }$' "$H/.gemini/oauth_creds.json" && ok "Gemini CLI creds untouched" || bad "Gemini CLI creds untouched"
 
 # ── 3. idempotency ──────────────────────────────────────────────────────────
 echo; echo "3) Re-running onboard changes nothing"
