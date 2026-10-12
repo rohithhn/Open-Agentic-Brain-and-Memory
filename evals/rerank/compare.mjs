@@ -8,7 +8,7 @@
 //
 //   node evals/rerank/compare.mjs [--model Xenova/ms-marco-MiniLM-L-6-v2] [--pool 100] [--stride 1] [--limit N]
 import '../test-env.mjs'; // BRAIN_TEST=1: never write the real store
-import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -32,7 +32,12 @@ const { semanticSearch } = await import('../../bin/lib/embed.mjs');
 const { ftsMatchExpr, MAX_QUERY_CHARS } = await import('../../bin/lib/recall.mjs');
 const { pruneCommonTerms } = await import('../../bin/lib/fts.mjs');
 
-const lib = await import('@huggingface/transformers');
+// Fail with a clear message (not a stack trace) when the inputs are not there.
+for (const f of ['longmemeval_s_cleaned.json', 'embed-cache.db']) {
+  if (!existsSync(join(LME, f))) { log(`missing ${join(LME, f)}: run evals/longmemeval/run.mjs first (downloads the dataset, builds the embed cache)`); process.exit(2); }
+}
+const lib = await import('@huggingface/transformers').catch(() => null);
+if (!lib) { log('the optional @huggingface/transformers library is not installed: npm install @huggingface/transformers'); process.exit(2); }
 lib.env.cacheDir = process.env.BRAIN_MODEL_DIR; lib.env.allowRemoteModels = true;
 const tok = await lib.AutoTokenizer.from_pretrained(MODEL);
 const ce = await lib.AutoModelForSequenceClassification.from_pretrained(MODEL, { dtype: 'q8' });

@@ -198,7 +198,7 @@ Why single-session-assistant moves most (32.1 → 100 BM25): those questions ope
 checking our previous chat about…", "I was wondering if you could remind me…") that used up the six
 slots before the identifying words (a name, a place, a dish), so the old builder never searched for them.
 
-**In-domain check (`brain eval`, `evals/questions.jsonl`, 139 questions).** Run with a fake `HOME` holding a
+**In-domain check (`brain eval`, `evals/questions.jsonl`, 139 questions; that file is built from the maintainer's own history, so it is not shipped).** Run with a fake `HOME` holding a
 `.backup` copy of the real store (43,807 observations; the copy has no embedding vectors, so this is BM25
 retrieval, which is also what `brain_context` does for a user who has not run `brain embed`). Same
 questions, old code from `git archive d8c8f5a`, new code from the working tree, both from throwaway

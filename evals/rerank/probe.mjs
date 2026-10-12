@@ -1,7 +1,8 @@
 import '../test-env.mjs';
 import { join, dirname } from 'node:path'; import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
-const lib = await import('@huggingface/transformers');
+const lib = await import('@huggingface/transformers').catch(() => null);
+if (!lib) { console.error('the optional @huggingface/transformers library is not installed: npm install @huggingface/transformers'); process.exit(2); }
 lib.env.cacheDir = join(HERE, '..', 'longmemeval', 'data', 'models'); lib.env.allowRemoteModels = true;
 for (const id of (process.argv[2] || 'Xenova/ms-marco-MiniLM-L-6-v2').split(',')) {
   const t0 = performance.now();

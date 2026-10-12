@@ -14,10 +14,11 @@ import { modelDir } from './embed.mjs';
 
 export const RERANK_MODEL = () => process.env.BRAIN_RERANK_MODEL || 'Xenova/ms-marco-MiniLM-L-6-v2';
 export const DEEP_POOL = 100;      // BM25 top N + semantic top N are added to the fused list
-// 128 tokens per (query, memory) pair: on the held-out LongMemEval half it is
-// as good as 256 or better (any@1 94.0 vs 91.5–93.2, all-evidence@40 97.4 vs
-// 95.7–97.0) at half the cost (~7 ms/pair). TinyBERT-L2 was 4x faster still
-// but lost its gains on the held-out half. Env override for reproducing runs.
+// 128 tokens per (query, memory) pair: on the LongMemEval selection half it
+// matched 256 on retrieval at half the cost (~7 ms/pair). It was not tested on
+// the held-out half or in QA (the published QA runs used 256 via the env
+// override below).
+// TinyBERT-L2 was 4x faster still but lost its gains on the held-out half.
 export const RERANK_MAX_TOKENS = Number(process.env.BRAIN_RERANK_MAX_TOKENS) || 128;
 
 let loading = null;

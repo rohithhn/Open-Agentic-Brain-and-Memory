@@ -279,7 +279,7 @@ await t('patterns: real and merely test-ish project names never match (conservat
     'real-claude-test', 'claude-real-run', 'Opendesign', 'brand-product-b5f215', 'od-design-system', 'od-',
     'scratch-2026-01-15-c0ffee', 'Example Testing Platform/agent-a000bc41ae8559cc5',
     'e2e-probe', 'e2e-probe-x', 'my-e2e-probe-001', 'proj-run-context', 'proj-run-context-12345',
-    '1F2E3D4C-5B6A-4789-8ABC-DEF012345678', '1f2e3d4c-5b6a-4789-8abc-def012345678-app', 'plugin-creator-plugin-plugin-connector-1p',
+    '1F2E3D4C-5B6A-4789-8ABC-DEF012345678', '1f2e3d4c-5b6a-4789-8abc-def012345678-app', 'plugin-example-plugin-plugin-connector-2q',
     '', null, undefined, 42]) {
     assert(!isTestDataProject(name), `${JSON.stringify(name)} must not match`);
   }

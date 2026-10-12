@@ -284,7 +284,8 @@ export function expandPairs(entries, srcRoot, { direction = 'export' } = {}) {
     const dstSide = fwd ? e.to : e.from;
     if (e.isDir) {
       const base = join(srcRoot, srcSide);
-      const found = walkFiles(base, { onSymlink: (r) => symlinks.push(`${srcSide}${r}`) });
+      // Finder metadata (.DS_Store lists folder contents) is never part of a mirrored directory.
+      const found = walkFiles(base, { skipNames: ['.DS_Store'], onSymlink: (r) => symlinks.push(`${srcSide}${r}`) });
       if (!found.length && !existsSync(base)) missing.push(srcSide);
       for (const rel of found) pairs.push({ src: `${srcSide}${rel}`, dest: `${dstSide}${rel}` });
       continue;
