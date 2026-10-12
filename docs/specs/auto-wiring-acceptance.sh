@@ -171,8 +171,10 @@ echo "$OUT2" | grep -qiE "already wired|unchanged" && ok "report says already wi
   || bad "report did not say unchanged"
 
 head_ "6. brain doctor agrees with onboard (the T5/T6 seam)"
+# stdout only: Node may print warnings (e.g. "SQLite is an experimental feature") on stderr,
+# which would make the JSON unparseable if merged in.
 DOC="$(env HOME="$SANDBOX" AGENTIC_BRAIN_HOME="$SANDBOX/.agentic-brain" \
-        node "$REPO/bin/brain.mjs" doctor --json 2>&1)"; DRC=$?
+        node "$REPO/bin/brain.mjs" doctor --json 2>/dev/null)"; DRC=$?
 echo "$DOC" | grep -qiE '"level"\s*:\s*"PASS"' && ok "doctor reports PASS rows" || bad "doctor reports no PASS rows"
 WIRED_NOTREG=$(node -e '
 let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
