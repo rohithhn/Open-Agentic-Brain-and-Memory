@@ -1,4 +1,4 @@
-# 🧠 Agentic Brain
+# Agentic Brain
 
 **Open-source, self-hosted memory for every AI coding tool. Your AI's memory, in your
 GitHub, encrypted with your key — not on someone's server.**
@@ -19,7 +19,7 @@ key that never leaves your machine's Keychain.
 your AI tools  ──capture──►  one local SQLite memory
                                    │
                                    ├─ distill  → a compounding wiki + reusable "learnings"
-                                   ├─ rank     → BM25 relevance + outcome scores
+                                   ├─ rank     → hybrid search (keywords + meaning) + outcome scores
                                    ├─ inject   → a ~2k-token block into CLAUDE.md / AGENTS.md / GEMINI.md
                                    └─ measure  → `brain eval` scores recall on your own history
                                    │
@@ -60,9 +60,10 @@ A set of loops, not a chat product:
    revised, not appended. `brain distill` detects *resolved-struggle* sessions (a cluster of
    fixes to the same file followed by a resolution signal) and drafts a reusable "learning".
    Drafts are never auto-approved; you approve them from the UI.
-3. **Rank.** Observation search is BM25 over SQLite FTS. Learnings additionally carry outcome
-   scores — how often a learning was injected, and whether you marked it helpful — so
-   ranking reflects proven usefulness, not keyword overlap alone.
+3. **Rank.** Search is local and hybrid: SQLite FTS keyword ranking (BM25) fused with a small
+   on-device embedding model, plus pseudo-relevance feedback and an opt-in cross-encoder
+   rerank ("deep recall"). Learnings additionally carry outcome scores — how often a learning
+   was injected, and whether you marked it helpful — so ranking reflects proven usefulness.
 4. **Inject.** One assembler builds the context block for every tool: learnings → observations
    → workflows → wiki, deduped by content hash and a normalized-text fingerprint, inside a
    ~2k-token budget. It writes into managed `BRAIN:START/END` regions; anything you wrote
@@ -118,8 +119,8 @@ which of these three columns they mean.
 
 ## Install
 
-Requires macOS, `git`, `node`, and a GitHub account. The installer fetches missing
-dependencies (`age`, `tar`, `gh`).
+Requires macOS or Linux, `git`, `node` (22+), and a GitHub account. The installer fetches
+missing dependencies (`age`, `tar`, `gh`).
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rohithhn/Ultra-Agentic-Memory-Brain-Public/main/install.sh | bash
@@ -136,6 +137,17 @@ The installer picks one of two modes:
 Two repos on purpose: the **engine** (this code, shared by everyone) and your **brain repo**
 (your data, private, yours). They are never the same repo.
 
+**What happens on first install:**
+
+1. It asks whether to start your memory with the past sessions your AI tools already keep on
+   this computer (recommended) or to start fresh. The answer is remembered, and every later
+   capture honours it. Change it any time with `brain past-sessions on` / `off`.
+2. It reads those sessions straight away and starts turning them into memories in the
+   background, and tells you what it found (for example, how many sessions per tool and
+   roughly how long the memory-building will take).
+3. If you use claude-mem, it offers to bring that history over instantly (undo any time).
+4. It wires every AI tool it finds and opens the control panel, which shows the progress.
+
 ### Quickstart
 
 ```bash
@@ -143,6 +155,8 @@ node bin/brain.mjs onboard   # wire THIS machine: MCP + profiles + watchers + da
 node bin/brain.mjs ingest    # pull in existing Claude Code / Codex / Antigravity / Kilo / Cursor sessions
 node bin/brain.mjs dream     # distill observations into the wiki
 node bin/brain.mjs eval      # score retrieval on your own history
+node bin/brain.mjs doctor    # read-only check that every tool is wired and capturing
+node bin/brain.mjs first-run # what was found, and how far memory-building has got
 npm run serve                # control panel on http://127.0.0.1:37800
 ```
 
@@ -182,9 +196,11 @@ brain key generate | import <AGE-SECRET-KEY-...> | show
 
 ### The control panel
 
-`npm run serve` → `http://127.0.0.1:37800`. Search memory, browse the wiki, approve or
-dismiss auto-distilled learnings, 👍/👎 injected learnings (that feedback is what drives
-ranking), watch capture freshness / watcher / worker / sync age, and run the eval.
+`npm run serve` → `http://127.0.0.1:37800`. Search memory and open, pin, edit or delete any
+memory; explore an interactive knowledge graph of your projects and the ideas that connect
+them; follow first-run progress while your history becomes memories; browse the wiki; approve
+or dismiss auto-distilled learnings and rate injected ones (that feedback drives ranking);
+watch capture freshness, watchers and sync age; and run the eval.
 
 ---
 
@@ -209,7 +225,7 @@ flowchart TB
   DB[("SQLite memory<br/>observations + FTS")]
 
   DB --> DREAM["distill<br/>wiki + learnings"]
-  DB --> RANK["rank<br/>BM25 + outcome scores"]
+  DB --> RANK["rank<br/>hybrid search + outcome scores"]
   DREAM --> RANK
   RANK --> INJ["inject<br/>~2k-token budget, deduped"]
   INJ --> PUSH["CLAUDE.md / AGENTS.md / GEMINI.md<br/>(always present)"]
@@ -239,10 +255,26 @@ readable.
 lives inside managed marker regions; human-authored content outside them is never modified.
 MCP wiring is additive — it never touches server entries it didn't create.
 
-**Testing.** 165 assertions across the engine's test suite, plus a 29-check acceptance
-harness for the auto-wiring paths, plus `brain eval` as a behavioral gate. This is one
-person's tool with one user; it is tested, not proven at scale, and this README will not
-pretend otherwise.
+**Testing.** 47 test suites (`npm test`) plus 4 sandbox simulations (`npm run test:sandbox`)
+that install the real engine on fake machines with every supported tool, on macOS and Linux,
+plus `brain eval` as a behavioral gate. It is tested, not proven at scale, and this README will
+not pretend otherwise.
+
+---
+
+## Benchmarks
+
+Measured with the product's own search; every answer and verdict is published so anyone can
+recompute the numbers.
+
+| Benchmark | Score | Setup |
+|---|---|---|
+| LongMemEval-S (500 questions, ~128k tokens of history each) | **94.2%** (93.4% with a GPT judge) | Claude Sonnet reader + judge, deep recall, 40 rounds |
+| LongMemEval-M (500 questions, ~1.27M tokens of history each) | **83.0%** | gpt-6-luna reader + judge; the reader sees 98.5% fewer tokens than the history |
+| LoCoMo (1,540 questions) | **86.6** (whole conversation: 89.3) | gpt-6-luna reader + judge for both; 97% of the full-context score at 18% of the tokens |
+
+Details, method and per-question proof: [`evals/longmemeval/RESULTS.md`](./evals/longmemeval/RESULTS.md)
+and [`evals/locomo/README.md`](./evals/locomo/README.md).
 
 ---
 
@@ -265,8 +297,7 @@ difference here is architectural, not qualitative:
 | Uptime guarantee | Theirs | None. It's your machine. |
 
 The last two rows are the costs on *this* side. That's the trade: you get ownership, privacy
-and no bill, and you take on a little setup. A fuller, sourced breakdown — including
-where the hosted products are genuinely ahead — is in [`vs-hosted.md`](./vs-hosted.md).
+and no bill, and you take on a little setup.
 
 **On retrieval specifically:** search is local and hybrid: SQLite keyword ranking fused with a
 small on-device embedding model (optional, ~23 MB), plus pseudo-relevance feedback and an
@@ -289,8 +320,11 @@ Stated plainly, because a comparison table nobody can falsify is worthless:
   longer. Local capture and search are incremental and instant.
 - **Multi-machine is merge-based**, not real-time. If you edit memory on two machines
   simultaneously, `brain merge` reconciles on next run — it does not resolve live conflicts.
-- **Retrieval is lexical.** Paraphrased questions where no term overlaps are the measured
-  failure mode.
+- **Meaning-based search needs the optional on-device model** (installed by default, ~23 MB).
+  Without it, search falls back to keywords only, and paraphrased questions with no
+  overlapping words are the failure mode.
+- **Session formats change.** Capture reads each tool's local files, and vendors change those
+  formats without notice; `brain doctor` flags a tool whose capture has gone stale.
 - **Two tools are pull-only forever** (Claude Desktop, ChatGPT desktop) for the architectural
   reasons above.
 - **Cursor push is per-repo**, so a new Cursor project starts without the digest until you

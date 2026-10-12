@@ -140,8 +140,9 @@ Before you rely on this for anything you care about:
 
 This is one person's tool with one prior production user. Be ready for:
 
-- **Retrieval misses on paraphrased questions.** Search is lexical (BM25), not semantic — if
-  you ask about something using none of the original words, it may not surface.
+- **Retrieval misses on paraphrased questions without the on-device model.** Search is hybrid
+  (keywords + meaning) when the optional embedding model is installed; without it, it is keyword
+  only, and a question that shares no words with the memory may not surface it.
 - **Multi-machine sync is whole-blob and merge-based, not real-time.** Editing memory on two
   machines at once needs `brain merge` to reconcile; it will not resolve live conflicts for
   you.
