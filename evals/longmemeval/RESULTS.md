@@ -56,6 +56,7 @@ metric. Do not compare the numbers below to those.
 |---|---|
 | Source | Hugging Face `xiaowu0162/longmemeval-cleaned` (the maintainers' Sept 2025 replacement for the original `xiaowu0162/longmemeval`, with noisy history sessions removed) |
 | Revision | `98d7416c24c778c2fee6e6f3006e7a073259d48f` (pinned in `run.mjs`) |
+| License | MIT (dataset card and https://github.com/xiaowu0162/LongMemEval). Cite Wu et al., *LongMemEval*, ICLR 2025 (arXiv:2410.10813). Gold answers in `proof/` stay under this license |
 | File | `longmemeval_s_cleaned.json`, 277,383,467 bytes, sha256 `d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442` (checked on every run) |
 | Questions | 500 in the file. **470 scored**: the 30 abstention questions (`*_abs`) have no evidence to retrieve and are excluded, as in the official retrieval evaluation |
 | Haystack | about 48 sessions (about 490 turns) per question; 94,955 distinct texts embedded across all questions (unique by text hash) |

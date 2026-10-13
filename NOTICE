@@ -4,3 +4,18 @@ Copyright 2026 rohithhn (https://github.com/rohithhn)
 This product is licensed under the Apache License, Version 2.0 (see LICENSE).
 "Agentic Brain" and its logo are names and marks of the project owner; the
 Apache License does not grant permission to use them (section 6).
+
+Third-party data
+----------------
+The per-question result files under evals/*/proof/ contain material from
+third-party benchmark datasets. That material is not covered by the Apache
+License and stays under the dataset's own license:
+
+- LongMemEval (Wu et al., ICLR 2025; https://github.com/xiaowu0162/LongMemEval),
+  used via https://huggingface.co/datasets/xiaowu0162/longmemeval-cleaned:
+  MIT License. Gold answers (truncated) in evals/longmemeval/proof/.
+- LoCoMo (Maharana et al., ACL 2024; https://github.com/snap-research/locomo):
+  Creative Commons Attribution-NonCommercial 4.0 (CC BY-NC 4.0). Questions
+  and gold answers (truncated) in evals/locomo/proof/; non-commercial use only.
+
+The datasets themselves are not redistributed; the harnesses download them.

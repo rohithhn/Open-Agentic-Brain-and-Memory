@@ -9,5 +9,8 @@ question, gzip-compressed (`gunzip -c qa-luna-deep-k40.jsonl.gz | head`).
   (`correctGpt`), next to the Claude verdict (`correctClaude`).
 
 Recompute any headline number from these files alone, e.g. the share of rows with `"correct":true`.
-Questions and gold answers come from the public LoCoMo dataset and stay under that
-dataset's own license; see its repository.
+Questions (full text) and gold answers (first 300 characters) come from LoCoMo (Maharana et al.,
+ACL 2024, arXiv:2402.17753), file `data/locomo10.json` from https://github.com/snap-research/locomo.
+That repository is licensed under Creative Commons Attribution-NonCommercial 4.0 (CC BY-NC 4.0).
+The dataset-derived fields in these files stay under CC BY-NC 4.0, not this project's Apache 2.0
+license: attribute the LoCoMo authors and use them for non-commercial purposes only.

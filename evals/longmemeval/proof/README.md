@@ -9,5 +9,8 @@ question, gzip-compressed (`gunzip -c qa-deep-k40.jsonl.gz | head`).
   (`correctGpt`), next to the Claude verdict (`correctClaude`).
 
 Recompute any headline number from these files alone, e.g. the share of rows with `"correct":true`.
-Questions and gold answers come from the public LongMemEval dataset and stay under that
-dataset's own license; see its repository.
+Gold answers (first 300 characters) come from LongMemEval (Wu et al., ICLR 2025,
+arXiv:2410.10813), via the maintainers' `longmemeval-cleaned` release on Hugging Face
+(https://huggingface.co/datasets/xiaowu0162/longmemeval-cleaned, revision `98d7416`). That release
+and the LongMemEval repository (https://github.com/xiaowu0162/LongMemEval) are MIT-licensed; the
+dataset-derived fields stay under that license and are attributed to its authors.

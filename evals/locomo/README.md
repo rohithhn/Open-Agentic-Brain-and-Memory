@@ -53,6 +53,9 @@ closed most of the multi-hop gap (65.6 -> 80.5; evidence fully in context 83.3%)
 
 `locomo10.json` from https://raw.githubusercontent.com/snap-research/locomo/main/data/locomo10.json
 (2,805,274 bytes), sha256 `79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4`.
+License: the LoCoMo repository is CC BY-NC 4.0 (Maharana et al., ACL 2024, arXiv:2402.17753). The
+questions and gold answers in `proof/` stay under that license (attribution, non-commercial use
+only), not this project's Apache 2.0 license.
 Not committed: `evals/locomo/data/` is git-ignored. Fetch it with
 `curl -L -o evals/locomo/data/locomo10.json <url above>` (the harness prints this if it is missing).
 
