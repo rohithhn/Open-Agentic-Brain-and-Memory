@@ -1,7 +1,7 @@
 // LoCoMo judge prompt + label parser, shared by qa.mjs and the cross-vendor
 // re-judge (evals/rejudge-gpt.mjs). Pure functions; importing this runs nothing.
-// Judge: follows mem0's published LLM-as-a-judge ("J") prompt from its LoCoMo
-// evaluation — generous on wording, same topic / same date counts as CORRECT,
+// Judge: modelled on mem0's published LLM-as-a-judge ("J") prompt from its LoCoMo
+// evaluation (reconstructed from memory of its wording, not copied verbatim) — generous on wording, same topic / same date counts as CORRECT,
 // label CORRECT or WRONG returned as JSON with key "label".
 export function judgePrompt(q, response) {
   return `Your task is to label an answer to a question as 'CORRECT' or 'WRONG'. You will be given the following data:

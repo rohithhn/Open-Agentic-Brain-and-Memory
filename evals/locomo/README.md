@@ -94,7 +94,8 @@ evidence ids; they only affect the `evidenceInContext` metric.
 - **Reader / judge.** `claude -p`, copied verbatim from longmemeval/qa.mjs: no hooks,
   settings, MCP, tools or session persistence, `BRAIN_DISTILLER=1`, temp cwd. The reader
   may reason briefly, then ends with `Answer: ...`; only that final answer is judged.
-  The judge prompt follows mem0's published LLM-as-a-judge (J) prompt: generous on
+  The judge prompt is modelled on mem0's published LLM-as-a-judge (J) prompt (reconstructed
+  from memory of its wording, not copied verbatim; see `prompts.mjs`): generous on
   wording, same topic / same date counts, CORRECT or WRONG returned as JSON.
 
 ### Why round units are the default
