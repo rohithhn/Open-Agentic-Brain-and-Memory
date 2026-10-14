@@ -21,7 +21,7 @@ All 1,540 scored questions, round units, k=20, Claude Sonnet reader and judge.
 | category-averaged | 74.4 |
 
 Evidence fully in the retrieved context for 68.4% of questions; retrieval p50 5 ms, p95 10 ms;
-about 3.6k reader tokens per question (including about 3k of fixed `claude -p` overhead) against about
+about 3.6k reader tokens per question (including roughly 1k of fixed `claude -p` overhead, estimated from the per-question files) against about
 26k for the whole conversation. Multi-hop is the weak spot: the evidence is spread over sessions and
 the top 20 rounds often miss part of it.
 
@@ -141,7 +141,7 @@ J, retrieval p50/p95, avg reader tokens vs the full conversation (~chars/4), and
   not as like-for-like.
 - The judge prompt is written in the style of mem0's published one from memory of its
   wording, not copied from a pinned file.
-- `avgReaderTokens` includes the fixed `claude -p` prompt overhead (~3k tokens), so it
+- `avgReaderTokens` includes the fixed `claude -p` prompt overhead (roughly 1k tokens, estimated from the per-question files), so it
   overstates the memory payload; `contextChars` per row is the retrieved-text size.
 - The full-conversation token figure is an estimate (chars/4), the same one longmemeval uses.
 - The retrieval store holds raw turns: no distillation, no graph, nothing the product's
