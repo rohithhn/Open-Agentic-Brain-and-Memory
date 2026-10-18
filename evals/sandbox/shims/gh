@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fake `gh` for the Agentic Brain sandbox. "GitHub" is $SB_GITHUB/<owner>/<repo>.git
+# Fake `gh` for the Open Agentic Brain and Memory sandbox. "GitHub" is $SB_GITHUB/<owner>/<repo>.git
 # (bare repos) plus $SB_GITHUB/<owner>/<repo>.releases/<tag>/<asset>.
 # Never touches the network or the real gh login.
 set -uo pipefail

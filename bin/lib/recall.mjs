@@ -1,4 +1,4 @@
-// Read path for the Agentic Brain MCP server (docs/specs/mcp-memory-server.md §1.2/§1.3).
+// Read path for the Open Agentic Brain and Memory MCP server (docs/specs/mcp-memory-server.md §1.2/§1.3).
 //
 // Two exports for T3 (bin/mcp-server.mjs) to call:
 //   - recallSearch(): targeted search -> compact rows: FTS5/BM25, fused with

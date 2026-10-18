@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Tests for bin/mcp-server.mjs — the stdio JSON-RPC protocol shell for the
-// Agentic Brain MCP memory server (docs/specs/mcp-memory-server.md §1/§7).
+// Open Agentic Brain and Memory MCP memory server (docs/specs/mcp-memory-server.md §1/§7).
 //
 //   node evals/mcp-server-test.mjs
 //

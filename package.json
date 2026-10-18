@@ -2,7 +2,7 @@
   "name": "agentic-brain",
   "version": "0.1.0",
   "private": true,
-  "description": "Agentic Brain \u2014 one encrypted memory for Claude Code, Claude Desktop, Cursor, Codex, Antigravity CLI and Kilo Code, synced to your own private GitHub.",
+  "description": "Open Agentic Brain and Memory \u2014 one encrypted memory for Claude Code, Claude Desktop, Cursor, Codex, Antigravity CLI and Kilo Code, synced to your own private GitHub.",
   "license": "Apache-2.0",
   "type": "module",
   "bin": {

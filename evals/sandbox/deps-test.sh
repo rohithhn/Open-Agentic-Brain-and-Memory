@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Agentic Brain — installer dependency sandbox. Each scenario is a fresh fake Mac
+# Open Agentic Brain and Memory — installer dependency sandbox. Each scenario is a fresh fake Mac
 # whose PATH holds ONLY what that scenario says is installed (plus /usr/bin:/bin).
 # "Homebrew" is simulated: it links real binaries into that Mac's bin dir.
 set -uo pipefail

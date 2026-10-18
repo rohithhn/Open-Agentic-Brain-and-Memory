@@ -2,7 +2,7 @@
 
 ## Our standard
 
-Agentic Brain is a small open-source project. The standard is simple: be respectful, be
+Open Agentic Brain and Memory is a small open-source project. The standard is simple: be respectful, be
 constructive, and don't make this space unpleasant for anyone else in it.
 
 In practice:

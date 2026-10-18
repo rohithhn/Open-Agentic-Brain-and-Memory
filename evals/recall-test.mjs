@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Tests for bin/lib/recall.mjs — the read path (recallSearch/taskContext) for
-// the Agentic Brain MCP server (docs/specs/mcp-memory-server.md §1.2/§1.3).
+// the Open Agentic Brain and Memory MCP server (docs/specs/mcp-memory-server.md §1.2/§1.3).
 //
 //   node evals/recall-test.mjs
 //

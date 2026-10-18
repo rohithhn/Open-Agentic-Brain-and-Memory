@@ -1,4 +1,4 @@
-// Always-on control panel. The Agentic Brain UI (localhost:37800) should be a
+// Always-on control panel. The Open Agentic Brain and Memory UI (localhost:37800) should be a
 // persistent background service — it survives logout, reboot, and closing any
 // terminal/CLI session, and auto-restarts if it dies. Same launchd pattern as
 // watch-agy: RunAtLoad (start at login) + KeepAlive (restart on crash).
@@ -26,7 +26,7 @@ export function installServe({ log = console.log } = {}) {
   const brain = join(REPO_ROOT, 'bin', 'brain.mjs');
   if (isLinux()) {
     // systemd --user: Restart=always + WantedBy=default.target ≈ KeepAlive + RunAtLoad.
-    const u = installUserUnit({ label: LABEL, description: 'Agentic Brain control panel', mode: 'daemon',
+    const u = installUserUnit({ label: LABEL, description: 'Open Agentic Brain and Memory control panel', mode: 'daemon',
       args: [node, brain, 'serve'], logPath: LOG });
     log(`✅ control panel is now always-on (systemd --user: ${u.unit})`);
     log(`   → ${url()}  (auto-starts at login, auto-restarts if it dies)`);

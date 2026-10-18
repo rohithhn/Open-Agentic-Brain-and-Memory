@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Agentic Brain systems benchmark — latency, scale, cold start, footprint and
+// Open Agentic Brain and Memory systems benchmark — latency, scale, cold start, footprint and
 // token economics, measured on synthetic stores. See evals/perf/README.md.
 //
 //   node evals/perf/bench.mjs            full run (1k, 10k, 50k, 100k)  ~ a few minutes

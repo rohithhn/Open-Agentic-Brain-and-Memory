@@ -159,7 +159,7 @@ export function buildDigest() {
         [
           '# Operator brain — cross-project memory',
           '',
-          "> 🧠 **Agentic Brain** — no observations yet. It hasn't learned anything from you " +
+          "> 🧠 **Open Agentic Brain and Memory** — no observations yet. It hasn't learned anything from you " +
             'yet, but it will as you work: use Claude Code, Codex, or Cursor normally and memory ' +
             'builds up automatically. Nothing to search or act on here yet.',
           '',
@@ -170,7 +170,7 @@ export function buildDigest() {
     const L = [];
     L.push('# Operator brain — cross-project memory');
     L.push('');
-    L.push(`> 🧠 **Agentic Brain loaded** — **${total}** observations across **${projects.length}** projects are ` +
+    L.push(`> 🧠 **Open Agentic Brain and Memory loaded** — **${total}** observations across **${projects.length}** projects are ` +
       `available to you as context right now. Search the full memory anytime with the \`brain_recall\` ` +
       `MCP tool, or \`brain_context\` for a ranked "what should I know before starting X". ` +
       `When the user asks to "load all my memory", call \`brain_context\` with that task for the ` +
@@ -178,7 +178,7 @@ export function buildDigest() {
       `_(Acknowledge on your first reply so the user knows their brain is active, and that they can ` +
       `ask about any other project or app — something specific, or "load all my memory".)_`);
     L.push('');
-    L.push(`_**${total}** observations across **${projects.length}** projects, distilled by Agentic Brain. ` +
+    L.push(`_**${total}** observations across **${projects.length}** projects, distilled by Open Agentic Brain and Memory. ` +
       `Auto-synced so this context is available in every folder._`);
     L.push('');
     if (active.length) {
@@ -203,7 +203,7 @@ export function buildDigest() {
     L.push('- `brain_recall` (query, project, limit) pulls details for any project or topic above.');
     L.push('- `brain_context` (task) ranks what matters before starting a specific piece of work.');
     L.push('- From a terminal: `brain recall "<words>" --project "<p>"`.');
-    L.push('- Or the Agentic Brain UI (localhost:37800) → Memory tab searches everything.');
+    L.push('- Or the Open Agentic Brain and Memory UI (localhost:37800) → Memory tab searches everything.');
     L.push('');
     // P8 (docs/specs/secret-scrubber.md §5.3): belt-and-braces scrub right before this
     // digest is written into CLAUDE.md/AGENTS.md — files that are frequently committed
@@ -249,7 +249,7 @@ export function buildFolderDigest(project) {
     const L = [];
     L.push(`# ${project} — folder memory (from your brain)`);
     L.push('');
-    L.push(`_${count} observations captured for this project, written by Agentic Brain so every CLI has this ` +
+    L.push(`_${count} observations captured for this project, written by Open Agentic Brain and Memory so every CLI has this ` +
       `folder's history._`);
     L.push('');
     L.push('## Recent work here');

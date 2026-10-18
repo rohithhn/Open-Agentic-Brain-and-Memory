@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-// Agentic Brain — stable MCP *memory server* shim (sibling of bridge-shim.cjs).
+// Open Agentic Brain and Memory — stable MCP *memory server* shim (sibling of bridge-shim.cjs).
 //
 // This file is GENERATED. It is copied verbatim from <engine>/bin/templates/
 // server-shim.cjs to ~/.agentic-brain/server.cjs by `brain onboard`. Edit the
@@ -47,7 +47,7 @@ const os = require('os');
 const { pathToFileURL } = require('url');
 
 const TAG = 'agentic-brain server: ';
-const FIX = "  fix: run 'brain onboard' from your Agentic Brain clone.\n";
+const FIX = "  fix: run 'brain onboard' from your Open Agentic Brain and Memory clone.\n";
 
 function die(msg) {
   // stderr only — never stdout (see PROTOCOL RULE above).
@@ -96,11 +96,11 @@ if (!fs.existsSync(engine)) {
 }
 // The clone-identity marker is bin/mcp-bridge.cjs (always present, predates
 // this server) rather than the server entry itself — that keeps "is this a
-// real Agentic Brain clone" and "does this clone have the memory server yet"
+// real Open Agentic Brain and Memory clone" and "does this clone have the memory server yet"
 // as two separate, separately-diagnosable failures (see the mcp-server.mjs
 // check below).
 if (!fs.existsSync(path.join(engine, 'bin', 'mcp-bridge.cjs'))) {
-  die('engine path exists but is not an Agentic Brain clone: ' + engine + '\n' + TAG + '  (missing bin/mcp-bridge.cjs)');
+  die('engine path exists but is not an Open Agentic Brain and Memory clone: ' + engine + '\n' + TAG + '  (missing bin/mcp-bridge.cjs)');
 }
 
 const target = path.join(engine, 'bin', 'mcp-server.mjs');

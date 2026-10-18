@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-// Agentic Brain — stable MCP bridge shim.
+// Open Agentic Brain and Memory — stable MCP bridge shim.
 //
 // This file is GENERATED. It is copied verbatim from <engine>/bin/templates/
 // bridge-shim.cjs to ~/.agentic-brain/bridge.cjs by `brain onboard`. Edit the
@@ -40,7 +40,7 @@ const path = require('path');
 const os = require('os');
 
 const TAG = 'agentic-brain bridge: ';
-const FIX = "  fix: run 'brain onboard' from your Agentic Brain clone.\n";
+const FIX = "  fix: run 'brain onboard' from your Open Agentic Brain and Memory clone.\n";
 
 function die(msg) {
   // stderr only — never stdout (see PROTOCOL RULE above).
@@ -88,7 +88,7 @@ if (!fs.existsSync(engine)) {
   die('engine path no longer exists: ' + engine + '\n' + TAG + '  (the clone was moved, renamed, or deleted)');
 }
 if (!fs.existsSync(target)) {
-  die('engine path exists but is not an Agentic Brain clone: ' + engine + '\n' + TAG + '  (missing bin/mcp-bridge.cjs)');
+  die('engine path exists but is not an Open Agentic Brain and Memory clone: ' + engine + '\n' + TAG + '  (missing bin/mcp-bridge.cjs)');
 }
 
 try {

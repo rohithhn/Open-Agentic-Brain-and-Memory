@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Something in Agentic Brain didn't work as expected
+about: Something in Open Agentic Brain and Memory didn't work as expected
 title: "[bug] "
 labels: bug
 ---

@@ -1,4 +1,4 @@
-// `brain switch-from-claude-mem` — move a claude-mem user onto Agentic Brain in
+// `brain switch-from-claude-mem` — move a claude-mem user onto Open Agentic Brain and Memory in
 // one command, without breaking claude-mem.
 //
 //   1. PLAN (default, writes nothing): what the import would copy, which tools
@@ -8,7 +8,7 @@
 //           source is opened read-only by import-claude-mem.mjs, always). An
 //           unverified import stops here — nothing is wired or silenced, so the
 //           user is never left with claude-mem muted and a partial brain.
-//        b. wire Agentic Brain everywhere (bridge home, MCP server in every
+//        b. wire Open Agentic Brain and Memory everywhere (bridge home, MCP server in every
 //           detected tool, Claude Code startup hook, context digest) — the same
 //           steps `brain onboard` runs, minus the launchd installs.
 //        c. if the user keeps claude-mem (the default): silence ONLY its
@@ -294,7 +294,7 @@ export function formatSwitchReport(r) {
   }
   if (r.error) { L.push(''); L.push(`  ✖ ${r.error}`); return L.join('\n'); }
   L.push('');
-  L.push(`2) wire Agentic Brain into your tools${r.dryRun ? ' (preview)' : ''}`);
+  L.push(`2) wire Open Agentic Brain and Memory into your tools${r.dryRun ? ' (preview)' : ''}`);
   for (const s of r.wiring) L.push(`   ${s.ok ? '✅' : '⚠️ '} ${s.step}: ${s.detail}`);
   L.push('');
   L.push('3) claude-mem\'s startup context dump');

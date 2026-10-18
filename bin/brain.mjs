@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// Claude Brain CLI — the engine behind the Agentic Brain.
+// Claude Brain CLI — the engine behind the Open Agentic Brain and Memory.
 //   brain sync        push this machine's brain to the cloud repo
 //   brain restore     pull the cloud brain onto this machine
 //   brain merge       merge the repo's exported memory into the local DB
 //   brain export      write memory exports locally (no git)
 //   brain status      show brain status
 //   brain key ...     manage the age encryption key (generate|import|show|backup|recover)
-//   brain serve       start the localhost Agentic Brain UI
+//   brain serve       start the localhost Open Agentic Brain and Memory UI
 //   brain distill     draft learnings from resolved-struggle episodes (--dry, --since <hours>)
 //   brain eval        score retrieval against evals/questions.jsonl (--no-wiki, --bm25, --verify)
 //   brain workflows   mine recurring rituals (verify/test → commit/deploy) → wiki/workflows/
@@ -481,7 +481,7 @@ Commands:
   key backup            store the key in the brain repo, encrypted with a recovery passphrase
   key recover           new Mac: unlock the key from that file with the passphrase (hidden prompt)
   key reveal            print the PRIVATE key to the terminal only (typed confirmation; refuses without a tty)
-  serve                 start the localhost Agentic Brain UI
+  serve                 start the localhost Open Agentic Brain and Memory UI
   distill               draft learnings from resolved-struggle episodes (--dry, --since <hours>)
   skills [status|--apply]  make one skill library callable from every tool (--relink, --json)
   distill-sessions      turn captured sessions into observations with our own LLM distiller

@@ -134,7 +134,7 @@ export function brainHealthSection() {
     rows.push({ level: 'PASS', label: 'watcher (agy)', detail: 'not installed (n/a on this machine)' });
   }
 
-  rows.push({ level: health.worker.state === 'ok' ? 'PASS' : 'WARN', label: 'search worker', detail: health.worker.alive ? 'alive' : 'not running (search/index features degraded)', fix: health.worker.alive ? null : 'open the Agentic Brain UI once, or run a claude-mem search — the worker lazy-starts' });
+  rows.push({ level: health.worker.state === 'ok' ? 'PASS' : 'WARN', label: 'search worker', detail: health.worker.alive ? 'alive' : 'not running (search/index features degraded)', fix: health.worker.alive ? null : 'open the Open Agentic Brain and Memory UI once, or run a claude-mem search — the worker lazy-starts' });
 
   if (health.sync.installed) {
     rows.push({ level: health.sync.state === 'red' ? 'WARN' : 'PASS', label: 'daily sync', detail: health.sync.lastSync ? `last synced ${Math.round((health.sync.ageMs ?? 0) / DAY)}d ago` : 'installed, never run yet', fix: health.sync.state === 'red' ? 'run: brain sync' : null });

@@ -42,7 +42,7 @@ export function installEmbed({ interval = DEFAULT_INTERVAL, limit = DEFAULT_LIMI
   const brain = join(REPO_ROOT, 'bin', 'brain.mjs');
   const args = embedArgs(limit);
   if (isLinux()) {
-    const u = installUserUnit({ label: LABEL, description: 'Agentic Brain semantic-search backfill', mode: 'interval',
+    const u = installUserUnit({ label: LABEL, description: 'Open Agentic Brain and Memory semantic-search backfill', mode: 'interval',
       interval, runAtLoad: true, nice: 10, lowPriority: true, logPath: LOG, args: [node, brain, ...args] });
     log(`✅ meaning-based search backfill on (systemd --user: ${u.unit}, every ${Math.round(interval / 60)} min, ${limit} memories/pass)`);
     log(`   log: ${LOG}`);

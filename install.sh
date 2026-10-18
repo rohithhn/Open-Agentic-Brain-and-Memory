@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Agentic Brain installer — two modes, auto-detected.
+# Open Agentic Brain and Memory installer — two modes, auto-detected.
 #
 #   INIT     brand-new user: clone the engine, then `brain init` creates your own
 #            private brain repo + encryption key and does the first sync.
 #   RESTORE  you already have a brain: clone it, paste your key, `brain restore`.
 #
-#   curl -fsSL https://raw.githubusercontent.com/rohithhn/Ultra-Agentic-Memory-and-Brain-Public/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/rohithhn/Open-Agentic-Brain-and-Memory/main/install.sh | bash
 #
 # There are TWO repo slugs and they are not the same thing:
 #   ENGINE_REPO  where this installer fetches the ENGINE CODE from.
@@ -28,10 +28,10 @@ elif [ -f "$HOME/agentic-brain/bin/brain.mjs" ]; then TARGET="$HOME/agentic-brai
 elif [ -f "$HOME/Documents/Brain-claude-mem/bin/brain.mjs" ]; then TARGET="$HOME/Documents/Brain-claude-mem"
 else TARGET="$HOME/agentic-brain"
 fi
-ENGINE_REPO_DEFAULT="rohithhn/Ultra-Agentic-Memory-and-Brain-Public"
+ENGINE_REPO_DEFAULT="rohithhn/Open-Agentic-Brain-and-Memory"
 ENGINE_REPO="${AGENTIC_BRAIN_REPO:-$ENGINE_REPO_DEFAULT}"
 
-echo "🧠 Agentic Brain installer"
+echo "🧠 Open Agentic Brain and Memory installer"
 
 # macOS is the tested platform. Linux: dependency hints are apt/dnf instead of
 # Homebrew, the key lives in libsecret (secret-tool) or an encrypted file, and
@@ -253,7 +253,7 @@ if [ "$MODE" = restore ]; then
   if ! has_key; then
     echo ""
     echo "🔐 No encryption key on this Mac yet."
-    echo "   Starting the Agentic Brain UI so you can paste your key (from your first Mac)."
+    echo "   Starting the Open Agentic Brain and Memory UI so you can paste your key (from your first Mac)."
     echo "   → open http://127.0.0.1:37800  (Ctrl-C here once the key is saved)"
     node bin/brain.mjs serve
   fi
@@ -354,7 +354,7 @@ CM_PENDING=$(node bin/brain.mjs first-run --json 2>/dev/null | node -e '
     try { const c = JSON.parse(s).claudeMem; if (c && c.observations && !c.imported) console.log(c.observations); } catch {}
   });' 2>/dev/null || true)
 if [ -n "$CM_PENDING" ] && have_tty; then
-  ANS=$(ask "📥 claude-mem found with $CM_PENDING memories. Bring them into Agentic Brain now? (undo any time) [Y/n]: " "Y")
+  ANS=$(ask "📥 claude-mem found with $CM_PENDING memories. Bring them into Open Agentic Brain and Memory now? (undo any time) [Y/n]: " "Y")
   case "$ANS" in [Nn]*) echo "   Skipped. Later: node bin/brain.mjs switch-from-claude-mem --apply" ;;
     *) node bin/brain.mjs switch-from-claude-mem --apply || echo "   claude-mem import didn't finish; nothing was changed. Retry: node bin/brain.mjs switch-from-claude-mem --apply" ;;
   esac

@@ -24,7 +24,7 @@ export function installDistill({ interval = DEFAULT_INTERVAL, limit = DEFAULT_LI
   const brain = join(REPO_ROOT, 'bin', 'brain.mjs');
   if (isLinux()) {
     // Nice=5 + IOSchedulingClass=idle ≈ launchd's Nice/Background/LowPriorityIO.
-    const u = installUserUnit({ label: LABEL, description: 'Agentic Brain distillation', mode: 'interval',
+    const u = installUserUnit({ label: LABEL, description: 'Open Agentic Brain and Memory distillation', mode: 'interval',
       interval, runAtLoad: true, nice: 5, lowPriority: true, logPath: LOG,
       args: [node, brain, 'distill-sessions', '--limit', String(limit), '--concurrency', '2'] });
     log(`✅ distillation on (systemd --user: ${u.unit}, every ${Math.round(interval / 60)} min, ${limit} segments/pass)`);

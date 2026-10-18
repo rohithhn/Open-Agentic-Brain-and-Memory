@@ -1,10 +1,10 @@
-# Agentic Brain
+# Open Agentic Brain and Memory
 
 **Open-source, self-hosted memory for every AI coding tool. Your AI's memory, in your
 GitHub, encrypted with your key — not on someone's server.**
 
 You tell Claude Code a decision. Tomorrow you're in Cursor, and it has no idea. Then Codex,
-and you explain it a third time. Agentic Brain captures what your coding sessions actually
+and you explain it a third time. Open Agentic Brain and Memory captures what your coding sessions actually
 established, distills it, ranks it, and injects the relevant part back into every tool you
 use — from one memory store that lives in **your own private GitHub repo**, encrypted with a
 key that never leaves your machine's Keychain.
@@ -51,7 +51,7 @@ A set of loops, not a chat product:
 
 **capture → distill → rank → inject → measure → capture**
 
-1. **Capture.** Agentic Brain captures every tool itself: purpose-built parsers read Claude Code,
+1. **Capture.** It captures every tool itself: purpose-built parsers read Claude Code,
    Codex, Antigravity CLI, Kilo Code and Cursor session files, and its own multi-provider
    distiller (Claude, Codex or Antigravity) turns them into memories in one local SQLite store
    (`~/.claude-brain/brain.db`). File watchers pick up new sessions
@@ -123,7 +123,7 @@ Requires macOS or Linux, `git`, `node` (22+), and a GitHub account. The installe
 missing dependencies (`age`, `tar`, `gh`).
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rohithhn/Ultra-Agentic-Memory-and-Brain-Public/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rohithhn/Open-Agentic-Brain-and-Memory/main/install.sh | bash
 ```
 
 The installer picks one of two modes:
@@ -170,14 +170,14 @@ node bin/brain.mjs switch-from-claude-mem --undo   # put claude-mem's settings b
 
 `--apply` does three things, in order, and stops safely if any step fails:
 
-1. **Imports your whole claude-mem history** into Agentic Brain's own store. claude-mem's database is
+1. **Imports your whole claude-mem history** into its own store. claude-mem's database is
    opened read-only, and the import is verified (every row and the search index) before anything else
    happens — an unverified import changes nothing else.
-2. **Wires Agentic Brain into every tool it finds**: Claude Code (plus its startup memory preview),
+2. **Wires itself into every tool it finds**: Claude Code (plus its startup memory preview),
    Claude Desktop, Codex, Cursor, Antigravity and Kilo Code.
 3. **Mutes claude-mem's startup memory dump** so you don't get two memory blocks at the start of every
    Claude Code session. Only that dump is muted (its settings are backed up first); claude-mem keeps
-   running. Keep it if you like, or uninstall it — Agentic Brain captures Claude Code on its own.
+   running. Keep it if you like, or uninstall it — it captures Claude Code on its own.
 
 Options: `--source <path>` imports a claude-mem database from somewhere else; `--no-silence` skips
 step 3; `--json` prints the plan/result as JSON.
@@ -284,7 +284,7 @@ Hosted memory products (Atlaso, mem0, and the memory built into ChatGPT and Clau
 real problem well, and if you want zero setup they are the better choice today. The
 difference here is architectural, not qualitative:
 
-| | Hosted memory service | Agentic Brain |
+| | Hosted memory service | Open Agentic Brain and Memory |
 |---|---|---|
 | Where your memory lives | The vendor's database | A Release asset on your private GitHub repo |
 | Who can read it | Vendor infrastructure, by design | Only whoever holds your `age` key |

@@ -261,7 +261,7 @@ export function selectRows(candidates, maxRows) {
 /** A first-time repo gets four honest lines, not a wall of unrelated text. */
 export function renderEmpty(project) {
   return [
-    `🧠 Agentic Brain — no memory for **${project}** yet.`,
+    `🧠 Open Agentic Brain and Memory — no memory for **${project}** yet.`,
     '',
     'Nothing has been recorded in this repo. It starts filling as you work.',
     'Other projects are still searchable: `brain recall "<query>"`, or the `brain_recall` MCP tool.',
@@ -325,13 +325,13 @@ export function renderPreview({ project, total, recent, brain = null, economics 
     : '';
 
   if (!total || !recent || !recent.length) {
-    out.push(c.head(`[${project}] no memory here yet — it fills as you work`) + c.dim('  · 🧠 Agentic Brain'));
+    out.push(c.head(`[${project}] no memory here yet — it fills as you work`) + c.dim('  · 🧠 Open Agentic Brain and Memory'));
     if (across) out.push(c.dim(`Your brain: ${across}`));
     out.push('', c.hint(ASK_HINT));
     return out.join('\n');
   }
 
-  out.push(c.head(`[${project}] recent memory, ${stampOf(now)}`) + c.dim('  · 🧠 Agentic Brain'));
+  out.push(c.head(`[${project}] recent memory, ${stampOf(now)}`) + c.dim('  · 🧠 Open Agentic Brain and Memory'));
   out.push(c.dim(`${fmtNum(total)} ${total === 1 ? 'memory' : 'memories'} in this folder${across ? ' · ' + across : ''}`));
   out.push(c.dim('─'.repeat(64)));
   out.push(c.dim(`Legend: ${LEGEND}`));
@@ -382,7 +382,7 @@ export function renderPreview({ project, total, recent, brain = null, economics 
  *  out — which is what lets the budget loop re-render cheaply. */
 function renderBlock({ project, rows, totalForProject, root, pinned = [] }) {
   const head = [
-    `🧠 Agentic Brain — **${project}** · ${fmtNum(totalForProject)} observations recorded, ${fmtNum(rows.length + pinned.length)} shown`,
+    `🧠 Open Agentic Brain and Memory — **${project}** · ${fmtNum(totalForProject)} observations recorded, ${fmtNum(rows.length + pinned.length)} shown`,
     '',
     'Legend  ◆ decision · ✗ bugfix · ✦ feature · ⟳ refactor · ~ change · ○ discovery · ⚠ security · ▸ session · ✓ verification',
     'Columns  `#id` = the observation id you can fetch · `HH:MM` = when it was recorded · indented under the file it touched · `[tool]` = recorded by another tool (unmarked = Claude Code)',

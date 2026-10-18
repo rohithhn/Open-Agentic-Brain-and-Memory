@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Agentic Brain — stdio MCP memory server (docs/specs/mcp-memory-server.md §1/§7).
+// Open Agentic Brain and Memory — stdio MCP memory server (docs/specs/mcp-memory-server.md §1/§7).
 //
 // Zero dependencies, hand-rolled JSON-RPC 2.0 over stdio. Framing matches
 // bin/lib/doctor.mjs's spawnProbe() client (the one existing piece of this repo
@@ -150,7 +150,7 @@ const PROMPTS = [
   },
   {
     name: SAVE_PROMPT_NAME,
-    description: 'Save what we worked out in this conversation into your Agentic Brain.',
+    description: 'Save what we worked out in this conversation into your Open Agentic Brain and Memory.',
     arguments: [
       { name: 'project', description: 'Project to file it under (defaults to a sensible guess)', required: false },
     ],
@@ -255,13 +255,13 @@ function instructionsFor(source) {
     "user's saved skills.";
   if (SELF_CAPTURING.has(String(source || ''))) {
     return (
-      'Agentic Brain memory: call brain_context at the start of substantive tasks; call ' +
+      'Open Agentic Brain and Memory: call brain_context at the start of substantive tasks; call ' +
       'brain_remember once per distinct outcome (decision, bugfix, discovery, stated preference), ' +
       "or whenever the user says 'remember this'. " + shared
     );
   }
   return (
-    'Agentic Brain memory is active. This client has NO automatic transcript capture, so nothing ' +
+    'Open Agentic Brain and Memory is active. This client has NO automatic transcript capture, so nothing ' +
     'is remembered unless you write it.\n' +
     '1. At the start of any substantive request, call brain_context with a one-line task summary ' +
     'and use what it returns.\n' +
@@ -415,7 +415,7 @@ function handlePromptsGet(params) {
       try { body = nodeFs.readFileSync(file, 'utf8'); } catch {}
       const input = (params && params.arguments && params.arguments.input) || '';
       const text =
-        `You are running the user's saved skill "${match}" from their Agentic Brain skill library.\n` +
+        `You are running the user's saved skill "${match}" from their Open Agentic Brain and Memory skill library.\n` +
         `Follow its instructions for the current request.\n\n` +
         (input ? `The user's input for this skill:\n${String(input).slice(0, 2000)}\n\n` : '') +
         `--- SKILL.md (${match}) ---\n${body.slice(0, 60000)}`;

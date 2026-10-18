@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Agentic Brain v1 — end-to-end sandbox test.
+# Open Agentic Brain and Memory v1 — end-to-end sandbox test.
 #
 # Everything the product touches in the real world is faked or isolated:
 #   $HOME        → a throwaway folder per simulated Mac (macA, macB, macC)
@@ -60,7 +60,7 @@ RECOVERY_PASS="blue canyon river lantern"   # the user's recovery passphrase (sy
 
 mkdir -p "$SB_GITHUB/OWNER"
 sb_engine "$SB/engine-src" || exit 2
-echo "🧪 Agentic Brain v1 sandbox — $SB"
+echo "🧪 Open Agentic Brain and Memory v1 sandbox — $SB"
 echo "   engine source: $SRC @ $WIPNOTE"
 
 # ── 0. Publish a clean "engine" to fake GitHub (no personal config.json) ────

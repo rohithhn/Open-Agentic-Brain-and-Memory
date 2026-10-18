@@ -66,7 +66,7 @@ export function installWatchAgy({ log = console.log } = {}) {
   const node = stableNodePath();
   const brain = join(REPO_ROOT, 'bin', 'brain.mjs');
   if (isLinux()) {
-    const u = installUserUnit({ label: LABEL, description: 'Agentic Brain Antigravity watcher', mode: 'daemon',
+    const u = installUserUnit({ label: LABEL, description: 'Open Agentic Brain and Memory Antigravity watcher', mode: 'daemon',
       args: [node, brain, 'watch-agy'], logPath: LOG });
     log(`✅ installed always-on agy watcher (systemd --user: ${u.unit})`);
     log(`   unit:  ${u.unitPath}`);
@@ -153,7 +153,7 @@ export function installWatchCodex({ log = console.log } = {}) {
   const node = stableNodePath();
   const brain = join(REPO_ROOT, 'bin', 'brain.mjs');
   if (isLinux()) {
-    const u = installUserUnit({ label: CODEX_LABEL, description: 'Agentic Brain Codex watcher', mode: 'daemon',
+    const u = installUserUnit({ label: CODEX_LABEL, description: 'Open Agentic Brain and Memory Codex watcher', mode: 'daemon',
       args: [node, brain, 'watch-codex'], logPath: CODEX_LOG });
     log(`✅ installed near-live Codex watcher (systemd --user: ${u.unit})`);
     log(`   unit:  ${u.unitPath}`);

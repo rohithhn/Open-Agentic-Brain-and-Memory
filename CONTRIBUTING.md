@@ -5,7 +5,7 @@ Thanks for your interest. Before anything else, read the section below — it ch
 
 ## License
 
-Agentic Brain is licensed under the **Apache License 2.0** (see `LICENSE` and `NOTICE`).
+Open Agentic Brain and Memory is licensed under the **Apache License 2.0** (see `LICENSE` and `NOTICE`).
 
 ## Contributing code
 
@@ -20,7 +20,7 @@ Agentic Brain is licensed under the **Apache License 2.0** (see `LICENSE` and `N
 
 - it is licensed to the project and its users under the Apache License 2.0; and
 - the project owner may also distribute it under other license terms in future versions of
-  Agentic Brain (for example, a different license for a later major release). Versions already
+  Open Agentic Brain and Memory (for example, a different license for a later major release). Versions already
   released under Apache 2.0 stay available under Apache 2.0.
 
 If you cannot agree to the second point, say so in your pull request before it is merged.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Agentic Brain v1 — does it work inside every app? (sandbox)
+# Open Agentic Brain and Memory v1 — does it work inside every app? (sandbox)
 # Apps: Claude Code · Claude Desktop · Cursor · Codex CLI (+ Codex/ChatGPT desktop,
 # which share ~/.codex/config.toml) · Antigravity CLI · Kilo Code (VS Code extension, beta). Gemini CLI is deliberately
 # NOT installed, to prove it isn't falsely wired.
@@ -36,7 +36,7 @@ brain() { on node "$E/bin/brain.mjs" "$@"; }
 # ── engine ────────────────────────────────────────────────────────────────
 sb_engine "$SB/engine-src" || exit 2
 mkdir -p "$SB_GITHUB/OWNER"; git clone -q --bare "$SB/engine-src" "$SB_GITHUB/OWNER/agentic-brain.git"
-echo "🧪 Agentic Brain — app wiring sandbox"; echo "   engine: $WIPNOTE"
+echo "🧪 Open Agentic Brain and Memory — app wiring sandbox"; echo "   engine: $WIPNOTE"
 
 # ── a Mac with every app installed, each already holding the user's own stuff ──
 mkdir -p "$H/tmp" "$H/Documents"

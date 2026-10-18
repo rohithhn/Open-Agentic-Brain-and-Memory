@@ -165,7 +165,7 @@ t('terminal preview masks secrets, stays under the cap, and says so plainly when
   assert(!out.preview.includes(fake), 'secret leaked into the terminal preview');
   assert(Buffer.byteLength(out.preview) <= PREVIEW_MAX_BYTES, 'preview over the size cap');
   const fresh = plain(renderPreview({ project: 'fresh', total: 0, recent: [], brain: { total: 42, projects: 3 }, color: false })).split('\n');
-  eq(fresh[0], '[fresh] no memory here yet — it fills as you work  · 🧠 Agentic Brain', 'empty-folder header');
+  eq(fresh[0], '[fresh] no memory here yet — it fills as you work  · 🧠 Open Agentic Brain and Memory', 'empty-folder header');
   eq(fresh[1], 'Your brain: 42 across 3 projects', 'empty-folder totals');
   eq(fresh[fresh.length - 1], ASK_HINT, 'empty folder still ends with the ask line');
 });

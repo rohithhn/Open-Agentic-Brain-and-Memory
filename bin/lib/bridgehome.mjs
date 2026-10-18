@@ -1,4 +1,4 @@
-// Agentic Brain — the stable bridge home (`~/.agentic-brain/`).
+// Open Agentic Brain and Memory — the stable bridge home (`~/.agentic-brain/`).
 //
 // Three files, one job: give every tool's MCP config an absolute path that
 // never moves, even when the user relocates their clone.
@@ -212,7 +212,7 @@ export function readPointer(env = process.env) {
       raw,
       engine,
       valid: false,
-      error: `${engine} is not an Agentic Brain clone (no bin/mcp-bridge.cjs) — run 'brain onboard' from the real clone.`,
+      error: `${engine} is not an Open Agentic Brain and Memory clone (no bin/mcp-bridge.cjs) — run 'brain onboard' from the real clone.`,
     };
   }
   return { exists: true, raw, engine, valid: true, error: null };
@@ -296,7 +296,7 @@ export function installBridgeHome({ engine = ENGINE_ROOT, env = process.env, dry
     warnings.push(e.message);
   }
 
-  const pointerBody = `# Written by 'brain onboard'. Absolute path of the Agentic Brain clone.\n# Tool MCP configs point at bridge.cjs/server.cjs beside this file, never at\n# the clone, so moving the clone is fixed by re-running 'brain onboard' —\n# nothing else.\n${engineRoot}\n`;
+  const pointerBody = `# Written by 'brain onboard'. Absolute path of the Open Agentic Brain and Memory clone.\n# Tool MCP configs point at bridge.cjs/server.cjs beside this file, never at\n# the clone, so moving the clone is fixed by re-running 'brain onboard' —\n# nothing else.\n${engineRoot}\n`;
 
   const actions = {
     bridge: writeIfChanged(join(home, BRIDGE_FILENAME), template, { mode: 0o755, dry }),

@@ -37,7 +37,7 @@ export function installDailySync({ log = console.log } = {}) {
     // PATH: git/gh/age for sync — distro dirs, ~/.local/bin, Linuxbrew, node's own dir.
     const path = [dirname(nodeBin), join(homedir(), '.local', 'bin'), '/home/linuxbrew/.linuxbrew/bin',
       '/usr/local/bin', '/usr/bin', '/bin'].join(':');
-    const u = installUserUnit({ label: LABEL, description: 'Agentic Brain daily sync', mode: 'calendar',
+    const u = installUserUnit({ label: LABEL, description: 'Open Agentic Brain and Memory daily sync', mode: 'calendar',
       calendar: { hour: 9, minute: 30 }, args: [nodeBin, script, 'sync'], env: { PATH: path },
       logPath: join(logOut, 'sync.out.log'), errPath: join(logOut, 'sync.err.log') });
     log(`✅ Daily sync scheduled (09:30) via systemd --user → ${u.unitPath}`);

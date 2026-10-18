@@ -1,4 +1,4 @@
-// Agentic Brain — localhost control panel server. Binds to 127.0.0.1 only.
+// Open Agentic Brain and Memory — localhost control panel server. Binds to 127.0.0.1 only.
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, readdirSync, realpathSync } from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
@@ -1059,7 +1059,7 @@ server.on('error', async (e) => {
     ours = r.ok;
   } catch {}
   if (ours) {
-    console.log(`Agentic Brain is already running at ${url} (the always-on background service) — open that.`);
+    console.log(`Open Agentic Brain and Memory is already running at ${url} (the always-on background service) — open that.`);
     process.exit(0);
   }
   console.error(`Port ${port} is in use by another program. Free it, or run on another port: BRAIN_UI_PORT=37801 npm run serve`);
@@ -1067,5 +1067,5 @@ server.on('error', async (e) => {
 });
 
 server.listen(port, host, () => {
-  console.log(`Agentic Brain running at http://${host}:${port}`);
+  console.log(`Open Agentic Brain and Memory running at http://${host}:${port}`);
 });

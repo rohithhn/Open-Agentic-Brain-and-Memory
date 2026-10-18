@@ -22,7 +22,7 @@ export function installIngest({ interval = DEFAULT_INTERVAL, log = console.log }
   const node = stableNodePath();
   const brain = join(REPO_ROOT, 'bin', 'brain.mjs');
   if (isLinux()) {
-    const u = installUserUnit({ label: LABEL, description: 'Agentic Brain periodic ingest', mode: 'interval',
+    const u = installUserUnit({ label: LABEL, description: 'Open Agentic Brain and Memory periodic ingest', mode: 'interval',
       interval, runAtLoad: true, args: [node, brain, 'ingest'], logPath: LOG });
     log(`✅ Codex/Cursor auto-capture on (systemd --user: ${u.unit}, every ${interval}s)`);
     log(`   runs \`brain ingest\` at login and every ${Math.round(interval / 60)} min`);

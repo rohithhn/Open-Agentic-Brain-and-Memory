@@ -1,6 +1,6 @@
 # Getting started, backup & uninstall
 
-Agentic Brain is open source (Apache-2.0). This page covers the practical bits the README
+Open Agentic Brain and Memory is open source (Apache-2.0). This page covers the practical bits the README
 skims: what you need, how to protect your key, how to report a problem, and how to remove
 everything again. The README is the authoritative overview.
 
@@ -16,7 +16,7 @@ everything again. The README is the authoritative overview.
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rohithhn/Ultra-Agentic-Memory-and-Brain-Public/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rohithhn/Open-Agentic-Brain-and-Memory/main/install.sh | bash
 ```
 
 With no existing brain, the installer clones this engine and runs `brain init`: it generates

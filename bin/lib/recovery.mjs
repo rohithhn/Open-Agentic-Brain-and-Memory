@@ -157,7 +157,7 @@ export function writeRecoveryFile(identity, passphrase, { path = RECOVERY_FILE, 
   const weak = passphraseProblem(passphrase);
   if (weak) throw new RecoveryError(weak, 'WEAK_PASSPHRASE');
   const text =
-    '# Agentic Brain encryption key (age identity), from: brain key backup\n' +
+    '# Open Agentic Brain and Memory encryption key (age identity), from: brain key backup\n' +
     `# created: ${new Date().toISOString()}\n` +
     (recipient ? `# public key: ${recipient}\n` : '') +
     identity + '\n';
